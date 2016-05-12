@@ -1,0 +1,32 @@
+select id_msg, id_member, score from smf_log_gpbp;
+
++-----------+-----------------------+------+-----+---------+-------+
+| Field     | Type                  | Null | Key | Default | Extra |
++-----------+-----------------------+------+-----+---------+-------+
+| ID_MSG    | int(10) unsigned      | NO   | PRI | NULL    |       |
+| ID_MEMBER | mediumint(8) unsigned | NO   | PRI | NULL    |       |
+| score     | smallint(2)           | NO   |     | NULL    |       |
+| ID_POSTER | mediumint(8) unsigned | NO   | MUL | NULL    |       |
+| log_time  | int(11)               | NO   |     | NULL    |       |
+
+
+
+show index from smf_log_gpbp where Key_name = 'PRIMARY' ;
++--------------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+
+| Table        | Non_unique | Key_name | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment |
++--------------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+
+| smf_log_gpbp |          0 | PRIMARY  |            1 | ID_MSG      | A         |        NULL |     NULL | NULL   |      | BTREE      |         |               |
+| smf_log_gpbp |          0 | PRIMARY  |            2 | ID_MEMBER   | A         |       26242 |     NULL | NULL   |      | BTREE      |         |               |
++--------------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+
+2 rows in set (0.00 sec)
+
+
+IMPORTANT!!!!
+
+ALTER TABLE smf_log_gpbp DROP PRIMARY KEY;
+    Query OK, 26242 rows affected (0.08 sec)
+    Records: 26242  Duplicates: 0  Warnings: 0
+
+ALTER TABLE smf_log_gpbp ADD id INT NOT NULL AUTO_INCREMENT PRIMARY KEY;
+    Query OK, 26242 rows affected (0.11 sec)
+    Records: 26242  Duplicates: 0  Warnings: 0

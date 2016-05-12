@@ -1,0 +1,25 @@
++-------------------+-----------------------+------+-----+---------+----------------+
+| Field             | Type                  | Null | Key | Default | Extra          |
++-------------------+-----------------------+------+-----+---------+----------------+
+| id_board          | smallint(5) unsigned  | NO   | PRI | NULL    | auto_increment |
+| id_cat            | tinyint(4) unsigned   | NO   | MUL | 0       |                |
+| child_level       | tinyint(4) unsigned   | NO   |     | 0       |                |
+| id_parent         | smallint(5) unsigned  | NO   | MUL | 0       |                |
+| board_order       | smallint(5)           | NO   |     | 0       |                |
+| id_last_msg       | int(10) unsigned      | NO   |     | 0       |                |
+| id_msg_updated    | int(10) unsigned      | NO   | MUL | 0       |                |
+| member_groups     | varchar(255)          | NO   | MUL | -1,0    |                |
+| id_profile        | smallint(5) unsigned  | NO   |     | 1       |                |
+| name              | varchar(255)          | NO   |     |         |                |
+| description       | text                  | NO   |     | NULL    |                |
+| num_topics        | mediumint(8) unsigned | NO   |     | 0       |                |
+| num_posts         | mediumint(8) unsigned | NO   |     | 0       |                |
+| count_posts       | tinyint(4)            | NO   |     | 0       |                |
+| id_theme          | tinyint(4) unsigned   | NO   |     | 0       |                |
+| override_theme    | tinyint(4) unsigned   | NO   |     | 0       |                |
+| anonymous_board   | tinyint(4) unsigned   | NO   |     | 0       |                |
+| enable_gpbp       | smallint(1) unsigned  | NO   |     | 0       |                |
+| redirect          | varchar(255)          | NO   |     |         |                |
+| unapproved_posts  | smallint(5)           | NO   |     | 0       |                |
+| unapproved_topics | smallint(5)           | NO   |     | 0       |                |
++-------------------+-----------------------+------+-----+---------+----------------+

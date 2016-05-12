@@ -1,0 +1,127 @@
++----------------------+-----------------------+------+-----+------------+----------------+
+| Field                | Type                  | Null | Key | Default    | Extra          |
++----------------------+-----------------------+------+-----+------------+----------------+
+| id_member            | mediumint(8) unsigned | NO   | PRI | NULL       | auto_increment |
+| member_name          | varchar(80)           | NO   | MUL |            |                |
+| date_registered      | int(10) unsigned      | NO   | MUL | 0          |                |
+| posts                | mediumint(8) unsigned | NO   | MUL | 0          |                |
+| id_group             | smallint(5) unsigned  | NO   | MUL | 0          |                |
+| lngfile              | varchar(255)          | NO   | MUL |            |                |
+| last_login           | int(10) unsigned      | NO   | MUL | 0          |                |
+| real_name            | varchar(255)          | NO   | MUL |            |                |
+| instant_messages     | smallint(5)           | NO   |     | 0          |                |
+| unread_messages      | smallint(5)           | NO   |     | 0          |                |
+| buddy_list           | text                  | NO   |     | NULL       |                |
+| pm_ignore_list       | text                  | NO   |     | NULL       |                |
+| message_labels       | text                  | NO   |     | NULL       |                |
+| passwd               | varchar(64)           | NO   |     |            |                |
+| email_address        | varchar(255)          | NO   |     |            |                |
+| personal_text        | varchar(255)          | NO   |     |            |                |
+| gender               | tinyint(4) unsigned   | NO   |     | 0          |                |
+| birthdate            | date                  | NO   | MUL | 0001-01-01 |                |
+| website_title        | varchar(255)          | NO   |     |            |                |
+| website_url          | varchar(255)          | NO   |     |            |                |
+| location             | varchar(255)          | NO   |     |            |                |
+| icq                  | varchar(255)          | NO   |     |            |                |
+| aim                  | varchar(255)          | NO   |     |            |                |
+| yim                  | varchar(32)           | NO   |     |            |                |
+| msn                  | varchar(255)          | NO   |     |            |                |
+| hide_email           | tinyint(4)            | NO   |     | 0          |                |
+| show_online          | tinyint(4)            | NO   |     | 1          |                |
+| time_format          | varchar(80)           | NO   |     |            |                |
+| signature            | text                  | NO   |     | NULL       |                |
+| time_offset          | float                 | NO   |     | 0          |                |
+| avatar               | varchar(255)          | NO   |     |            |                |
+| pm_email_notify      | tinyint(4)            | NO   |     | 0          |                |
+| karma_bad            | smallint(5) unsigned  | NO   |     | 0          |                |
+| karma_good           | smallint(5) unsigned  | NO   |     | 0          |                |
+| usertitle            | varchar(255)          | NO   |     |            |                |
+| notify_announcements | tinyint(4)            | NO   |     | 1          |                |
+| notify_regularity    | tinyint(4) unsigned   | NO   |     | 1          |                |
+| notify_send_body     | tinyint(4)            | NO   |     | 0          |                |
+| notify_types         | tinyint(4)            | NO   |     | 2          |                |
+| member_ip            | varchar(255)          | NO   |     |            |                |
+| member_ip2           | varchar(255)          | NO   |     |            |                |
+| secret_question      | varchar(255)          | NO   |     |            |                |
+| secret_answer        | varchar(64)           | NO   |     |            |                |
+| id_theme             | tinyint(4) unsigned   | NO   | MUL | 0          |                |
+| is_activated         | tinyint(3) unsigned   | NO   |     | 1          |                |
+| validation_code      | varchar(10)           | NO   |     |            |                |
+| id_msg_last_visit    | int(10) unsigned      | NO   |     | 0          |                |
+| additional_groups    | varchar(255)          | NO   |     |            |                |
+| smiley_set           | varchar(48)           | NO   |     |            |                |
+| id_post_group        | smallint(5) unsigned  | NO   | MUL | 0          |                |
+| total_time_logged_in | int(10) unsigned      | NO   | MUL | 0          |                |
+| password_salt        | varchar(255)          | NO   |     |            |                |
+| gpbp_respect         | smallint(6)           | NO   |     | 0          |                |
+| mod_prefs            | varchar(20)           | NO   |     |            |                |
+| warning              | tinyint(4)            | NO   | MUL | 0          |                |
+| ignore_boards        | text                  | NO   |     | NULL       |                |
+| passwd_flood         | varchar(12)           | NO   |     |            |                |
+| new_pm               | tinyint(3)            | NO   |     | 0          |                |
+| pm_prefs             | mediumint(8)          | NO   |     | 0          |                |
+| openid_uri           | text                  | NO   |     | NULL       |                |
+| pm_receive_from      | tinyint(3) unsigned   | NO   |     | 1          |                |
++----------------------+-----------------------+------+-----+------------+----------------+
+61 rows in set (0.00 sec)
+
+
+
+User
+  nick Text
+  displayNick Text
+  name Text
+  email Text
+  plugin Text
+  ident Text
+  createdAt UTCTime Maybe DEFAULT=now()
+  modifiedAt UTCTime Maybe
+
++----------------------+-----------------------+------+-----+------------+----------------+
+| Field                | Type                  | Null | Key | Default    | Extra          |
++----------------------+-----------------------+------+-----+------------+----------------+
+| id_member            | mediumint(8) unsigned | NO   | PRI | NULL       | auto_increment |
+| member_name          | varchar(80)           | NO   | MUL |            |                |
+| date_registered      | int(10) unsigned      | NO   | MUL | 0          |                |
+?| posts                | mediumint(8) unsigned | NO   | MUL | 0          |                |
+| last_login           | int(10) unsigned      | NO   | MUL | 0          |                |
+| real_name            | varchar(255)          | NO   | MUL |            |                |
+?| instant_messages     | smallint(5)           | NO   |     | 0          |                |
+?| unread_messages      | smallint(5)           | NO   |     | 0          |                |
+?| pm_ignore_list       | text                  | NO   |     | NULL       |                |
+| passwd               | varchar(64)           | NO   |     |            |                |
+| email_address        | varchar(255)          | NO   |     |            |                |
+| personal_text        | varchar(255)          | NO   |     |            |                |
+| gender               | tinyint(4) unsigned   | NO   |     | 0          |                |
+| birthdate            | date                  | NO   | MUL | 0001-01-01 |                |
+| website_title        | varchar(255)          | NO   |     |            |                |
+| website_url          | varchar(255)          | NO   |     |            |                |
+| location             | varchar(255)          | NO   |     |            |                |
+| hide_email           | tinyint(4)            | NO   |     | 0          |                |
+| show_online          | tinyint(4)            | NO   |     | 1          |                |
+| signature            | text                  | NO   |     | NULL       |                |
+| avatar               | varchar(255)          | NO   |     |            |                |
+| pm_email_notify      | tinyint(4)            | NO   |     | 0          |                |
+| karma_bad            | smallint(5) unsigned  | NO   |     | 0          |                |
+| karma_good           | smallint(5) unsigned  | NO   |     | 0          |                |
+| usertitle            | varchar(255)          | NO   |     |            |                |
+| notify_announcements | tinyint(4)            | NO   |     | 1          |                |
+| notify_regularity    | tinyint(4) unsigned   | NO   |     | 1          |                |
+| notify_send_body     | tinyint(4)            | NO   |     | 0          |                |
+| notify_types         | tinyint(4)            | NO   |     | 2          |                |
+| member_ip            | varchar(255)          | NO   |     |            |                |
+| member_ip2           | varchar(255)          | NO   |     |            |                |
+| secret_question      | varchar(255)          | NO   |     |            |                |
+| secret_answer        | varchar(64)           | NO   |     |            |                |
+| id_theme             | tinyint(4) unsigned   | NO   | MUL | 0          |                |
+| is_activated         | tinyint(3) unsigned   | NO   |     | 1          |                |
+| validation_code      | varchar(10)           | NO   |     |            |                |
+| total_time_logged_in | int(10) unsigned      | NO   | MUL | 0          |                |
+| password_salt        | varchar(255)          | NO   |     |            |                |
+| gpbp_respect         | smallint(6)           | NO   |     | 0          |                |
+| ignore_boards        | text                  | NO   |     | NULL       |                |
+| passwd_flood         | varchar(12)           | NO   |     |            |                |
+| new_pm               | tinyint(3)            | NO   |     | 0          |                |
+| pm_prefs             | mediumint(8)          | NO   |     | 0          |                |
+| pm_receive_from      | tinyint(3) unsigned   | NO   |     | 1          |                |
++----------------------+-----------------------+------+-----+------------+----------------+

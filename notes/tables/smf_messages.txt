@@ -1,0 +1,24 @@
+select id_msg, id_topic, id_board, poster_time, id_member, id_msg_modified, subject, modified_time, modified_name, gpbp_score from smf_messages;
+
++-----------------+-----------------------+------+-----+---------+----------------+
+| Field           | Type                  | Null | Key | Default | Extra          |
++-----------------+-----------------------+------+-----+---------+----------------+
+| id_msg          | int(10) unsigned      | NO   | PRI | NULL    | auto_increment |
+| id_topic        | mediumint(8) unsigned | NO   | MUL | 0       |                |
+| id_board        | smallint(5) unsigned  | NO   | MUL | 0       |                |
+| poster_time     | int(10) unsigned      | NO   |     | 0       |                |
+| id_member       | mediumint(8) unsigned | NO   | MUL | 0       |                |
+| id_msg_modified | int(10) unsigned      | NO   |     | 0       |                |
+| subject         | varchar(255)          | NO   |     |         |                |
+| poster_name     | varchar(255)          | NO   |     |         |                |
+| poster_email    | varchar(255)          | NO   |     |         |                |
+| poster_ip       | varchar(255)          | NO   | MUL |         |                |
+| smileys_enabled | tinyint(4)            | NO   |     | 1       |                |
+| modified_time   | int(10) unsigned      | NO   |     | 0       |                |
+| modified_name   | varchar(255)          | NO   |     |         |                |
+| body            | mediumtext            | NO   |     | NULL    |                |
+| icon            | varchar(16)           | NO   |     | xx      |                |
+| gpbp_score      | smallint(6)           | NO   |     | 0       |                |
+| approved        | tinyint(3)            | NO   | MUL | 1       |                |
++-----------------+-----------------------+------+-----+---------+----------------+
+17 rows in set (0.00 sec)

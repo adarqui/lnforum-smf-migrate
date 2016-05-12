@@ -1,0 +1,28 @@
+select id_topic, is_sticky, id_board, id_first_msg, locked from smf_topics;
+
+select smf_topics.*, smf_messages.id_topic from smf_topics JOIN smf_messages USING (id_topic);
+
+select smf_topics.*, smf_messages.id_topic from smf_topics INNER JOIN smf_messages ON smf_topics.id_first_msg=smf_messages.id_msg;
+
+select smf_topics.id_topic, smf_topics.is_sticky, smf_topics.id_board, smf_topics.id_member_started, smf_topics.locked, smf_messages.subject, smf_messages.poster_time, smf_messages.poster_ip from smf_topics INNER JOIN smf_messages
+ON smf_topics.id_first_msg=smf_messages.id_msg LIMIT 1;
+
++-------------------+-----------------------+------+-----+---------+----------------+
+| Field             | Type                  | Null | Key | Default | Extra          |
++-------------------+-----------------------+------+-----+---------+----------------+
+| id_topic          | mediumint(8) unsigned | NO   | PRI | NULL    | auto_increment |
+| is_sticky         | tinyint(4)            | NO   | MUL | 0       |                |
+| id_board          | smallint(5) unsigned  | NO   | MUL | 0       |                |
+| id_first_msg      | int(10) unsigned      | NO   | MUL | 0       |                |
+| id_last_msg       | int(10) unsigned      | NO   | MUL | 0       |                |
+| id_member_started | mediumint(8) unsigned | NO   | MUL | 0       |                |
+| id_member_updated | mediumint(8) unsigned | NO   |     | 0       |                |
+| id_poll           | mediumint(8) unsigned | NO   | MUL | 0       |                |
+| num_replies       | int(10) unsigned      | NO   |     | 0       |                |
+| num_views         | int(10) unsigned      | NO   |     | 0       |                |
+| locked            | tinyint(4)            | NO   |     | 0       |                |
+| unapproved_posts  | smallint(5)           | NO   |     | 0       |                |
+| approved          | tinyint(3)            | NO   | MUL | 1       |                |
+| id_previous_board | smallint(5)           | NO   |     | 0       |                |
+| id_previous_topic | mediumint(8)          | NO   |     | 0       |                |
++-------------------+-----------------------+------+-----+---------+----------------+

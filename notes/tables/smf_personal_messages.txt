@@ -1,0 +1,33 @@
+select id_pm, from_name, msgtime, subject, body from smf_personal_messages;
+
++-------------------+-----------------------+------+-----+---------+----------------+
+| Field             | Type                  | Null | Key | Default | Extra          |
++-------------------+-----------------------+------+-----+---------+----------------+
+| id_pm             | int(10) unsigned      | NO   | PRI | NULL    | auto_increment |
+| id_pm_head        | int(10) unsigned      | NO   | MUL | 0       |                |
+| id_member_from    | mediumint(8) unsigned | NO   | MUL | 0       |                |
+| deleted_by_sender | tinyint(3) unsigned   | NO   |     | 0       |                |
+| from_name         | varchar(255)          | NO   |     |         |                |
+| msgtime           | int(10) unsigned      | NO   | MUL | 0       |                |
+| subject           | varchar(255)          | NO   |     |         |                |
+| body              | text                  | NO   |     | NULL    |                |
++-------------------+-----------------------+------+-----+---------+----------------+
+
+
+
+
+select smf_personal_messages.id_pm, smf_personal_messages.id_member_from, smf_personal_messages.deleted_by_sender, smf_personal_messages.msgtime, smf_personal_messages.subject, smf_personal_messages.body, smf_pm_recipients.id_member, smf_pm_recipients.bcc, smf_pm_recipients.is_read, smf_pm_recipients.deleted, smf_pm_recipients.is_new from smf_personal_messages INNER JOIN smf_pm_recipients ON smf_personal_messages.id_pm=smf_pm_recipients.id_pm LIMIT 1;
+
++-------+----------------+-------------------+------------+--------------------------+---------------------------------------------------------------------------------------------------------------+-----------+-----+---------+---------+--
+------+
+| id_pm | id_member_from | deleted_by_sender | msgtime    | subject                  | body                                                                                                          | id_member | bcc | is_read | deleted | i
+s_new |
++-------+----------------+-------------------+------------+--------------------------+---------------------------------------------------------------------------------------------------------------+-----------+-----+---------+---------+--
+------+
+|     1 |              1 |                 1 | 1244014014 | check warmup vid/article | what you think? im going to sleep<br /><br />peace man..<br /><br />that song in the vid is pretty cool btw.. |         3 |   0 |       3 |       0 |
+    0 |
++-------+----------------+-------------------+------------+--------------------------+---------------------------------------------------------------------------------------------------------------+-----------+-----+---------+---------+--
+------+
+1 row in set (0.00 sec)
+
+mysql>

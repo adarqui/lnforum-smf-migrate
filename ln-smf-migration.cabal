@@ -1,0 +1,72 @@
+name:                ln-smf-migration
+version:             0.1.0.0
+synopsis:            Initial project template from stack
+description:         Please see README.md
+homepage:            http://github.com/githubuser/ln-smf-migration#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Andrew Darqui
+maintainer:          andrew.darqui@gmail.com
+copyright:           2016 Author Here
+category:            Web
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     LN.SMF.Migration
+                       LN.SMF.Migration.Board
+                       LN.SMF.Migration.Connect
+                       LN.SMF.Migration.Connect.MySQL
+                       LN.SMF.Migration.Connect.Redis
+                       LN.SMF.Migration.Control
+                       LN.SMF.Migration.Forum
+                       LN.SMF.Migration.Organization
+                       LN.SMF.Migration.Pm
+                       LN.SMF.Migration.Sanitize
+                       LN.SMF.Migration.Thread
+                       LN.SMF.Migration.ThreadPost
+                       LN.SMF.Migration.ThreadPostLike
+                       LN.SMF.Migration.User
+  build-depends:       base >= 4.7 && < 5
+                     , ln-api
+                     , ln-types
+                     , ln-lib
+                     , bytestring
+                     , fast-tagsoup                  >= 1.0.7
+                     , hakyll                        >= 4.7.5.1
+                     , hedis
+                     , mysql-simple                  >= 0.2.2.5
+                     , persistent                    >= 2.0        && < 2.3
+                     , persistent-mysql
+                     , persistent-postgresql         >= 2.1.1      && < 2.3
+                     , persistent-template           >= 2.0        && < 2.3
+                     , postgresql-simple             >= 0.5.1.2
+                     , text
+                     , time
+                     , transformers
+                     , wreq
+                     , text-regex-replace          >= 0.1.1.1
+  default-language:    Haskell2010
+
+executable ln-smf-migrate
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base
+                     , ln-smf-migration
+  default-language:    Haskell2010
+
+test-suite ln-smf-migration-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , ln-smf-migration
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/githubuser/ln-smf-migration
