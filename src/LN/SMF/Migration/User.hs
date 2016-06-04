@@ -10,6 +10,7 @@ module LN.SMF.Migration.User (
 
 
 
+import           Haskell.Api.Helpers
 import           Control.Exception
 import           Control.Monad                  (forM_, void)
 import           Control.Monad.IO.Class         (liftIO)
@@ -19,12 +20,11 @@ import           Data.Monoid                    ((<>))
 import           Data.Text                      (Text)
 import qualified Data.Text                      as T
 import           Database.MySQL.Simple
-import           LN.Api                         (createUser, deleteUser',
-                                                 runDefault)
+import           LN.T
+import           LN.Api
 import           LN.SMF.Migration.Connect.Redis
 import           LN.SMF.Migration.Control
 import           LN.SMF.Migration.Sanitize
-import           LN.T.User
 
 
 
@@ -32,7 +32,7 @@ import           LN.T.User
 --
 createSuperUser :: MigrateRWST ()
 createSuperUser = do
-  createRedisMap usersName 1 1
+  createRedisMap "usersName" 1 1
 
 
 
@@ -40,7 +40,7 @@ createSuperUser = do
 --
 removeSuperUser :: MigrateRWST ()
 removeSuperUser = do
-  deleteRedisMapByLnId usersName 1
+  deleteRedisMapByLnId "usersName" 1
 
 
 
@@ -59,7 +59,7 @@ createLegacyUsers = do
 
   xs <- liftIO $ query mysql "select id_member, member_name, real_name, email_address, date_registered from smf_members LIMIT ?" (Only limit)
 
-  smf_ids <- smfIds usersName
+  smf_ids <- smfIds "usersName"
 
   -- filter out users who have already been added
   --
@@ -72,7 +72,7 @@ createLegacyUsers = do
        date_registered :: Int
       ) -> do
 
-      mresult <- findLnIdFromSmfId usersName id_member
+      mresult <- findLnIdFromSmfId "usersName" id_member
 
       case mresult of
 
@@ -82,14 +82,14 @@ createLegacyUsers = do
 
           liftIO $ putStrLn $ show [show id_member, T.unpack member_name, T.unpack real_name, T.unpack email_address, show date_registered]
 
-          eresult <- liftIO (try (runDefault (createUser [("unix_ts", T.pack $ show date_registered)] $
-            UserRequest (fixNick member_name) (fixDisplayNick member_name) real_name email_address "smf" (T.pack $ show id_member))) :: IO (Either SomeException (Either String UserResponse)))
+          eresult <- liftIO (try (rd (postUser [UnixTimestamp $ fromIntegral date_registered] $
+            UserRequest (fixNick member_name) (fixDisplayNick member_name) real_name email_address "smf" (T.pack $ show id_member))) :: IO (Either SomeException (Either ApiError UserResponse)))
 
           case eresult of
             (Left err) -> liftIO $ putStrLn $ show err
-            (Right (Left err)) -> liftIO $ putStrLn err
+            (Right (Left err)) -> liftIO $ putStrLn $ show err
             (Right (Right user_response)) -> do
-              createRedisMap usersName id_member (userResponseId user_response)
+              createRedisMap "usersName" id_member (userResponseId user_response)
               return ()
 
     ) -- forM_
@@ -102,7 +102,7 @@ createLegacyUsers = do
 deleteLegacyUsers :: MigrateRWST ()
 deleteLegacyUsers = do
 
-  user_ids <- lnIds usersName
+  user_ids <- lnIds "usersName"
 
   forM_ user_ids
 
@@ -112,8 +112,8 @@ deleteLegacyUsers = do
         then return ()
         else do
           liftIO $ putStrLn $ show user_id
-          void $ liftIO (try (runDefault (deleteUser' user_id)) :: IO (Either SomeException ()))
-          deleteRedisMapByLnId usersName user_id
+          void $ liftIO (try (rd (deleteUser' user_id)) :: IO (Either SomeException (Either ApiError ())))
+          deleteRedisMapByLnId "usersName" user_id
     )
 
   return ()

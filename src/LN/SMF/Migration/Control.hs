@@ -3,11 +3,14 @@ module LN.SMF.Migration.Control (
   MigrateState (..),
   MigrateReader (..),
   MigrateWriter,
-  MigrateRWST
+  MigrateRWST,
+  rd,
+  rw
 ) where
 
 
 
+import           Haskell.Api.Helpers
 import           Control.Monad.Trans.RWS as A
 import qualified Database.MySQL.Simple   as My
 import qualified Database.Redis          as R
@@ -33,3 +36,19 @@ type MigrateWriter = ()
 
 
 type MigrateRWST = RWST MigrateReader MigrateWriter MigrateState IO
+
+
+
+rd actions = runWith actions apiOpts { apiKey = Just "1" }
+
+rw actions s = runWith actions $ apiOpts { apiKey = Just s }
+
+
+apiOpts = ApiOptions {
+  apiUrl = "https://leuro.adarq.org",
+  apiPrefix = "api",
+  apiKey = Nothing,
+  apiKeyHeader = Just "z-authorization",
+  apiWreqOptions = defaultWreqOptions,
+  apiDebug = True
+}

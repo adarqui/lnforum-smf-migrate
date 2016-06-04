@@ -33,6 +33,7 @@ library
                      , ln-api
                      , ln-types
                      , ln-lib
+                     , haskell-api-helpers
                      , bytestring
                      , fast-tagsoup                  >= 1.0.7
                      , hakyll                        >= 4.7.5.1

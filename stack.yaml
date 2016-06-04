@@ -4,5 +4,6 @@ packages:
 - '../ln-types'
 - '../ln-api'
 - '../ln-lib'
+- '../haskell-api-helpers'
 extra-deps: [fast-tagsoup-1.0.7, text-regex-replace-0.1.1.1]
 resolver: lts-5.5

@@ -8,18 +8,17 @@ module LN.SMF.Migration.Pm (
 
 
 
-import Data.Monoid ((<>))
+import           Haskell.Api.Helpers
+import           Data.Monoid ((<>))
 import           Control.Exception              (SomeException (..), try)
 import           Control.Monad                  (forM_)
 import           Control.Monad.IO.Class         (liftIO)
 import           Control.Monad.Trans.RWS
+import qualified Data.ByteString.Char8          as BSC
 import           Data.Int
 import           Data.Text                      (Text)
-import qualified Data.Text                      as T (pack)
 import           Database.MySQL.Simple
-import           LN.Api                         (createPm, deletePm',
-                                                 getPm', runDefault,
-                                                 runWithAuthId)
+import           LN.Api
 import           LN.SMF.Migration.Connect.Redis
 import           LN.SMF.Migration.Control
 import           LN.SMF.Migration.Sanitize
@@ -37,7 +36,7 @@ createLegacyPms = do
 
   pms <- liftIO $ query mysql "select smf_personal_messages.id_pm, smf_personal_messages.id_member_from, smf_personal_messages.deleted_by_sender, smf_personal_messages.msgtime, smf_personal_messages.subject, smf_personal_messages.body, smf_pm_recipients.id_member, smf_pm_recipients.bcc, smf_pm_recipients.is_read, smf_pm_recipients.deleted, smf_pm_recipients.is_new from smf_personal_messages INNER JOIN smf_pm_recipients ON smf_personal_messages.id_pm=smf_pm_recipients.id_pm LIMIT ?" (Only limit)
 
-  pm_ids <- smfIds pmsName
+  pm_ids <- smfIds "pmsName"
 
 --  forum_ids <- head <$> lnIds "forums"
 
@@ -59,8 +58,8 @@ createLegacyPms = do
 
         liftIO $ print (id_pm, id_member_from, deleted_by_sender, msgtime, subject, body, id_member, bcc, is_read, is_deleted, is_new)
 
-        muser_from <- findLnIdFromSmfId usersName id_member_from
-        muser_to <- findLnIdFromSmfId usersName id_member
+        muser_from <- findLnIdFromSmfId "usersName" id_member_from
+        muser_to <- findLnIdFromSmfId "usersName" id_member
 
         liftIO $ print (muser_from, muser_to)
 
@@ -73,14 +72,14 @@ createLegacyPms = do
           ((Just user_from), (Just user_to)) -> do
             -- doesn't exist, created it
             --
-            eresult <- liftIO $ runWithAuthId (createPm [("unix_ts", T.pack $ show msgtime)] user_to $
-              PmRequest (sanitizeHtml subject) (sanitizeHtml body)) (show user_from)
+            eresult <- liftIO $ rw (postPm_ByUserId [UnixTimestamp $ fromIntegral msgtime] user_to $
+              PmRequest (sanitizeHtml subject) (sanitizeHtml body)) (BSC.pack $ show user_from)
 
             case eresult of
-              (Left err) -> liftIO $ putStrLn err
+              (Left err) -> liftIO $ print err
               (Right pm_response) -> do
-                createRedisMap pmsName id_pm (pmResponseId pm_response)
-                createRedisMap (pmsName <> "_users") (pmResponseId pm_response) (pmResponseUserId pm_response)
+                createRedisMap "pmsName" id_pm (pmResponseId pm_response)
+                createRedisMap ("pmsName" <> "_users") (pmResponseId pm_response) (pmResponseUserId pm_response)
 
 
           (_, _) -> return ()
@@ -94,24 +93,24 @@ createLegacyPms = do
 deleteLegacyPms :: MigrateRWST ()
 deleteLegacyPms = do
 
-  pm_ids <- lnIds pmsName
+  pm_ids <- lnIds "pmsName"
 
   forM_ pm_ids
     (\pm_id -> do
 
       liftIO $ putStrLn $ show pm_id
 
-      mpm_user_id <- getId (pmsName <> "_users") pm_id
+      mpm_user_id <- getId ("pmsName" <> "_users") pm_id
       case mpm_user_id of
         Nothing -> return ()
         Just pm_user_id -> do
 
-          del_result <- liftIO (try (runWithAuthId (deletePm' pm_id) (show pm_user_id)) :: IO (Either SomeException ()))
+          del_result <- liftIO (try (rw (deletePm' pm_id) (BSC.pack $ show pm_user_id)) :: IO (Either SomeException (Either ApiError ())))
           case del_result of
             Left err -> liftIO $ putStrLn $ show err
             Right _ -> do
-              deleteRedisMapByLnId pmsName pm_id
-              deleteRedisMapByLnId (pmsName <> "_users") pm_id
+              deleteRedisMapByLnId "pmsName" pm_id
+              deleteRedisMapByLnId ("pmsName" <> "_users") pm_id
       )
 
   return ()
