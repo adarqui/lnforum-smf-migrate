@@ -15,7 +15,9 @@ import           Control.Monad.IO.Class         (liftIO)
 import           Control.Monad.Trans.RWS
 import qualified Data.ByteString.Char8          as BSC
 import           Data.Int
+import           Data.Monoid                    ((<>))
 import           Data.Text                      (Text)
+import qualified Data.Text                      as T (pack)
 import           Database.MySQL.Simple
 import           LN.Api
 import           LN.SMF.Migration.Connect.Redis
@@ -73,7 +75,17 @@ createLegacyThreads = do
               ThreadRequest (sanitizeHtml subject) Nothing is_sticky locked Nothing Nothing []) (BSC.pack $ show user)
 
             case eresult of
-              (Left err) -> liftIO $ print err
+              (Left err) -> do
+                -- HACKJOB, try and create the thread again, but this time with a modified title
+                liftIO $ print err
+                eresult <- liftIO $ rw (postThread_ByBoardId [UnixTimestamp $ fromIntegral poster_time] board $
+                  ThreadRequest (sanitizeHtml $ subject <> (T.pack $ show poster_time)) Nothing is_sticky locked Nothing Nothing []) (BSC.pack $ show user)
+
+                case eresult of
+                  (Left err) -> liftIO $ print err
+                  (Right thread_response) -> do
+                    createRedisMap "threadsName" id_topic (threadResponseId thread_response)
+
               (Right thread_response) -> do
                 createRedisMap "threadsName" id_topic (threadResponseId thread_response)
 
