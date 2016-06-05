@@ -59,19 +59,20 @@ createLegacyBoards = do
         categories
         (\(id_cat :: Int64, _) -> do
 
-          boards <- liftIO $ query mysql "select id_board, id_cat, name, description from smf_boards where id_cat = ?" (Only id_cat)
+          boards <- liftIO $ query mysql "select id_board, id_parent, id_cat, name, description from smf_boards where id_cat = ?" (Only id_cat)
 
           forM_
-            (filter (\(id_board, _, _, _) -> not $ id_board `elem` board_ids) boards)
-            (\(id_board :: Int64,
-               id_parent :: Int64,
+            (filter (\(id_board, _, _, _, _) -> not $ id_board `elem` board_ids) boards)
+            (\(id_board   :: Int64,
+               id_parent  :: Int64,
+               id_cat     :: Int64,
                board_name :: Text,
                board_desc :: Text
               ) -> do
 
-              liftIO $ print (id_board, id_parent, board_name, board_desc)
+              liftIO $ print (id_board, id_parent, id_parent, board_name, board_desc)
 
-              mresult <- findLnIdFromSmfId "boardsName" id_parent
+              mresult <- findLnIdFromSmfId "boardsName" (if id_parent == 0 then id_cat else id_parent)
 
               case mresult of
                 Nothing -> return () -- doesn't exist??
