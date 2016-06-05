@@ -31,7 +31,8 @@ createLegacyThreadPosts = do
   mysql <- asks rMySQL
   limit <- asks rLimit
 
-  [Only thread_posts_count] <- liftIO $ query_ mysql "select count(*) from id_msg, id_topic, poster_time, id_member, subject, body, poster_ip from smf_messages"
+--  [Only thread_posts_count] <- liftIO $ query_ mysql "select count(*) from id_msg, id_topic, poster_time, id_member, subject, body, poster_ip from smf_messages"
+  [Only thread_posts_count] <- liftIO $ query_ mysql "select count(*) from smf_messages"
 
   let
     max_limit = min limit thread_posts_count
