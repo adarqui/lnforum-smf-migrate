@@ -35,10 +35,14 @@ createLegacyThreads = do
   mysql <- asks rMySQL
   limit <- asks rLimit
 
-  [Only threads_count] <- liftIO $ query_ mysql "select count(*) from smf_messages"
+  [Only threads_count] <- liftIO $ query_ mysql "select count(*) from smf_topics.id_topic, smf_topics.is_sticky, smf_topics.id_board, smf_topics.id_member_started, smf_topics.locked, smf_messages.subject, smf_messages.poster_time, smf_messages.poster_ip from smf_topics INNER JOIN smf_messages ON smf_topics.id_first_msg=smf_messages.id_msg where smf_topics.id_board != 79"
+
+  let
+    max_limit = min limit threads_count
 
 
-  forM_ [0..(threads_count `div` 50)] (\off -> do
+  forM_ [0..(max_limit `div` 50)] (\off -> do
+
     threads <- liftIO $ query mysql "select smf_topics.id_topic, smf_topics.is_sticky, smf_topics.id_board, smf_topics.id_member_started, smf_topics.locked, smf_messages.subject, smf_messages.poster_time, smf_messages.poster_ip from smf_topics INNER JOIN smf_messages ON smf_topics.id_first_msg=smf_messages.id_msg where smf_topics.id_board != 79 LIMIT ? OFFSET ?" (50 :: Int, (50 * off) :: Int)
 
     thread_ids <- smfIds "threadsName"

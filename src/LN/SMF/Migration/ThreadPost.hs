@@ -31,44 +31,52 @@ createLegacyThreadPosts = do
   mysql <- asks rMySQL
   limit <- asks rLimit
 
+  [Only thread_posts_count] <- liftIO $ query_ mysql "select count(*) from id_msg, id_topic, poster_time, id_member, subject, body, poster_ip from smf_messages"
 
-  thread_posts <- liftIO $ query mysql "select id_msg, id_topic, poster_time, id_member, subject, body, poster_ip from smf_messages LIMIT ?" (Only limit)
+  let
+    max_limit = min limit thread_posts_count
 
-  thread_post_ids <- smfIds "threadPostsName"
 
-  forum_ids <- lnIds "forumsName"
+  forM_ [0..(max_limit `div` 50)] (\off -> do
 
-  case forum_ids of
-    [] -> liftIO $ putStrLn "Forum does not exist."
-    (_:_) -> do
+    thread_posts <- liftIO $ query mysql "select id_msg, id_topic, poster_time, id_member, subject, body, poster_ip from smf_messages LIMIT ? OFFSET ?" (50 :: Int, (50 * off) :: Int)
 
-      forM_
-        (filter (\(id_msg, _, _, _, _, _, _) -> not $ id_msg `elem` thread_post_ids) thread_posts)
-        (\(id_msg :: Int64,
-           id_topic :: Int64,
-           poster_time :: Int64,
-           id_member :: Int64,
-           subject :: Text,
-           body :: Text,
-           poster_ip :: Text
-          ) -> do
+    thread_post_ids <- smfIds "threadPostsName"
 
-            liftIO $ print $ (id_msg, id_topic, poster_time, id_member, subject, poster_ip)
+    forum_ids <- lnIds "forumsName"
 
-            mtopic <- findLnIdFromSmfId "threadsName" id_topic
-            muser  <- findLnIdFromSmfId "usersName" id_member
+    case forum_ids of
+      [] -> liftIO $ putStrLn "Forum does not exist."
+      (_:_) -> do
 
-            case (mtopic, muser) of
-              (Just topic, Just user) -> do
-                eresult <- liftIO $ rw (postThreadPost_ByThreadId [UnixTimestamp poster_time] topic $
-                  ThreadPostRequest (Just $ sanitizeHtml subject) (PostDataBBCode $ sanitizeHtml body) [] []) (BSC.pack $ show user)
+        forM_
+          (filter (\(id_msg, _, _, _, _, _, _) -> not $ id_msg `elem` thread_post_ids) thread_posts)
+          (\(id_msg :: Int64,
+             id_topic :: Int64,
+             poster_time :: Int64,
+             id_member :: Int64,
+             subject :: Text,
+             body :: Text,
+             poster_ip :: Text
+            ) -> do
 
-                case eresult of
-                  (Left err) -> liftIO $ print err
-                  (Right thread_post_response) -> do
-                    createRedisMap "threadPostsName" id_msg (threadPostResponseId thread_post_response)
+              liftIO $ print $ (id_msg, id_topic, poster_time, id_member, subject, poster_ip)
 
-              (_, _) -> return ()
+              mtopic <- findLnIdFromSmfId "threadsName" id_topic
+              muser  <- findLnIdFromSmfId "usersName" id_member
+
+              case (mtopic, muser) of
+                (Just topic, Just user) -> do
+                  eresult <- liftIO $ rw (postThreadPost_ByThreadId [UnixTimestamp poster_time] topic $
+                    ThreadPostRequest (Just $ sanitizeHtml subject) (PostDataBBCode $ sanitizeHtml body) [] []) (BSC.pack $ show user)
+
+                  case eresult of
+                    (Left err) -> liftIO $ print err
+                    (Right thread_post_response) -> do
+                      createRedisMap "threadPostsName" id_msg (threadPostResponseId thread_post_response)
+
+                (_, _) -> return ()
+          )
         )
 
   return ()
