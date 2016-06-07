@@ -93,12 +93,13 @@ createLegacyThreads = do
               ((Just board), Nothing, (Just user)) -> do
                 -- doesn't exist, created it
                 --
-                eresult <- liftIO $ rw (postThread_ByBoardId [UnixTimestamp $ fromIntegral poster_time] board $
-                  ThreadRequest (sanitizeHtml subject') Nothing is_sticky locked Nothing Nothing [] 0) (BSC.pack $ show user)
+                eresult <- liftIO (try (rw (postThread_ByBoardId [UnixTimestamp $ fromIntegral poster_time] board $
+                  ThreadRequest (sanitizeHtml subject') Nothing is_sticky locked Nothing Nothing [] 0) (BSC.pack $ show user)) :: IO (Either SomeException (Either ApiError ThreadResponse)))
 
                 case eresult of
-                  (Left err)              -> liftIO $ print err
-                  (Right thread_response) -> do
+                  (Left err)                      -> liftIO $ print err
+                  (Right (Left err))              -> liftIO $ print err
+                  (Right (Right thread_response)) -> do
                     lift $ createRedisMap "threadsName" id_topic (threadResponseId thread_response)
                     break ()
 
