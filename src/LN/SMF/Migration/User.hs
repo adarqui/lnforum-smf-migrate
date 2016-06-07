@@ -12,7 +12,7 @@ module LN.SMF.Migration.User (
 
 import           Control.Break
 import           Control.Exception
-import           Control.Monad                  (forM_, void)
+import           Control.Monad                  (forM_, void, when)
 import           Control.Monad.IO.Class         (liftIO)
 import           Control.Monad.Trans.RWS
 import           Data.Int
@@ -88,6 +88,8 @@ createLegacyUsers = do
 
             lift $ modify (\(MigrateState n) -> MigrateState (n+1))
             unique_id <- lift $ gets runMigrateState
+
+            when (unique_id == 10) (break ())
 
             let member_name' = if unique_id == 1 then member_name else (member_name <> (T.pack $ show unique_id))
 
