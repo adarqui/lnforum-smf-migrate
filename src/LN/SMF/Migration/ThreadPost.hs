@@ -69,14 +69,18 @@ createLegacyThreadPosts = do
               case (mtopic, muser) of
                 (Just topic, Just user) -> do
                   eresult <- liftIO $ rw (postThreadPost_ByThreadId [UnixTimestamp poster_time] topic $
-                    ThreadPostRequest (Just $ sanitizeHtml subject) (PostDataBBCode $ sanitizeHtml body) [] []) (BSC.pack $ show user)
+                    ThreadPostRequest (Just subject) (PostDataBBCode body) [] []) (BSC.pack $ show user)
+--                    ThreadPostRequest (Just $ sanitizeHtml subject) (PostDataBBCode $ sanitizeHtml body) [] []) (BSC.pack $ show user)
 
                   case eresult of
                     (Left err) -> liftIO $ print err
                     (Right thread_post_response) -> do
                       createRedisMap "threadPostsName" id_msg (threadPostResponseId thread_post_response)
 
-                (_, _) -> return ()
+                (_, _) -> do
+                  liftIO $ print $ "thread_posts: not found: mtopic=" ++ show mtopic ++ ", muser=" ++ show muser
+                  return ()
+--              return ()
           )
         )
 

@@ -19,6 +19,9 @@ ghci:
 install:
 	stack install --local-bin-path=./bin
 
+profile:
+	stack install --executable-profiling --library-profiling --ghc-options="-rtsopts"
+
 weird:
 	brew install icu4c
 	stack install text-icu --extra-lib-dirs=/usr/local/opt/icu4c/lib --extra-include-dirs=/usr/local/opt/icu4c/include

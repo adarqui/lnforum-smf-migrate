@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module LN.SMF.Migration.Control (
   module A,
   MigrateState (..),

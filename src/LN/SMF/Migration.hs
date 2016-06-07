@@ -42,8 +42,8 @@ migrateSMF limit = migrateRWST limit go
     createLegacyUsers
     createLegacyThreads
     createLegacyThreadPosts
-    createLegacyThreadPostLikes
-    createLegacyPms
+--    createLegacyThreadPostLikes
+--    createLegacyPms
 
 
 
@@ -58,8 +58,8 @@ unMigrateSMF = migrateRWST 0 go
   go = do
     -- deleteUserProfiles
     -- deleteUserSettings
-    deleteLegacyPms
-    deleteLegacyThreadPostLikes
+--    deleteLegacyPms
+--    deleteLegacyThreadPostLikes
     deleteLegacyThreadPosts
     deleteLegacyThreads
     deleteLegacyBoards
