@@ -10,7 +10,7 @@ module LN.SMF.Migration.User (
 
 
 
-import           Haskell.Api.Helpers
+import           Control.Break
 import           Control.Exception
 import           Control.Monad                  (forM_, void)
 import           Control.Monad.IO.Class         (liftIO)
@@ -20,11 +20,13 @@ import           Data.Monoid                    ((<>))
 import           Data.Text                      (Text)
 import qualified Data.Text                      as T
 import           Database.MySQL.Simple
-import           LN.T
+import           Haskell.Api.Helpers
 import           LN.Api
 import           LN.SMF.Migration.Connect.Redis
 import           LN.SMF.Migration.Control
 import           LN.SMF.Migration.Sanitize
+import           LN.T
+import           Prelude                        hiding (break)
 
 
 
@@ -80,17 +82,22 @@ createLegacyUsers = do
 
         Nothing -> do
 
-          liftIO $ putStrLn $ show [show id_member, T.unpack member_name, T.unpack real_name, T.unpack email_address, show date_registered]
+          loop $ do
 
-          eresult <- liftIO (try (rd (postUser [UnixTimestamp $ fromIntegral date_registered] $
-            UserRequest (fixDisplayNick member_name) real_name email_address "smf" (T.pack $ show id_member))) :: IO (Either SomeException (Either ApiError UserResponse)))
+            lift $ modify (\(MigrateState n) -> MigrateState (n+1))
 
-          case eresult of
-            (Left err) -> liftIO $ putStrLn $ show err
-            (Right (Left err)) -> liftIO $ putStrLn $ show err
-            (Right (Right user_response)) -> do
-              createRedisMap "usersName" id_member (userResponseId user_response)
-              return ()
+            liftIO $ putStrLn $ show [show id_member, T.unpack member_name, T.unpack real_name, T.unpack email_address, show date_registered]
+
+            eresult <- liftIO (try (rd (postUser [UnixTimestamp $ fromIntegral date_registered] $
+              UserRequest (fixDisplayNick member_name) real_name email_address "smf" (T.pack $ show id_member))) :: IO (Either SomeException (Either ApiError UserResponse)))
+
+            case eresult of
+              (Left err) -> liftIO $ putStrLn $ show err
+              (Right (Left err)) -> liftIO $ putStrLn $ show err
+              (Right (Right user_response)) -> do
+                lift $ createRedisMap "usersName" id_member (userResponseId user_response)
+                break ()
+--                return ()
 
     ) -- forM_
 

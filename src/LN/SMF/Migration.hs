@@ -74,5 +74,5 @@ migrateRWST :: forall w a. Int -> RWST MigrateReader w MigrateState IO a -> IO (
 migrateRWST limit go = do
   mysql <- connectMySQL
   redis <- connectRedis
-  void $ evalRWST go (MigrateReader redis mysql limit) (MigrateState False)
+  void $ evalRWST go (MigrateReader redis mysql limit) (MigrateState 0)
   return ()

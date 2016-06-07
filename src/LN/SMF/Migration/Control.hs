@@ -19,9 +19,7 @@ import qualified Database.Redis          as R
 
 
 
-data MigrateState = MigrateState {
-  stTest :: Bool
-}
+data MigrateState = MigrateState Int
 
 
 

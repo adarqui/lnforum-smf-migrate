@@ -35,9 +35,11 @@ library
                      , ln-lib
                      , haskell-api-helpers
                      , bytestring
+                     , break
                      , fast-tagsoup                  >= 1.0.7
                      , hakyll                        >= 4.7.5.1
                      , hedis
+                     , monad-loops                   >= 0.4.3      && < 0.4.4
                      , mysql-simple                  >= 0.2.2.5
                      , persistent                    >= 2.0        && < 2.3
                      , persistent-mysql
