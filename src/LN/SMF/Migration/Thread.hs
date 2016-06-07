@@ -9,8 +9,9 @@ module LN.SMF.Migration.Thread (
 
 
 import           Haskell.Api.Helpers
+import           Control.Break                  (loop, break, lift)
 import           Control.Exception              (SomeException (..), try)
-import           Control.Monad                  (forM_)
+import           Control.Monad                  (forM_, when)
 import           Control.Monad.IO.Class         (liftIO)
 import           Control.Monad.Trans.RWS
 import qualified Data.ByteString.Char8          as BSC
@@ -19,6 +20,7 @@ import           Data.Monoid                    ((<>))
 import           Data.Text                      (Text)
 import qualified Data.Text                      as T (pack)
 import           Database.MySQL.Simple
+import           Prelude               hiding   (break)
 import           LN.Api
 import           LN.SMF.Migration.Connect.Redis
 import           LN.SMF.Migration.Control
@@ -71,34 +73,36 @@ createLegacyThreads = do
 
           liftIO $ print (mboard, mtopic, muser)
 
-          case (mboard, mtopic, muser) of
+          put $ MigrateState 0
 
-            (Nothing, _, _) -> return ()
+          loop $ do
 
-            (_, _, Nothing) -> return ()
+            lift $ modify (\(MigrateState n) -> MigrateState (n+1)) 
+            unique_id <- lift $ gets runMigrateState
 
-            ((Just board), Nothing, (Just user)) -> do
-              -- doesn't exist, created it
-              --
-              eresult <- liftIO $ rw (postThread_ByBoardId [UnixTimestamp $ fromIntegral poster_time] board $
-                ThreadRequest (sanitizeHtml subject) Nothing is_sticky locked Nothing Nothing [] 0) (BSC.pack $ show user)
+            when (unique_id == 10) (break ())
 
-              case eresult of
-                (Left err) -> do
-                  -- HACKJOB, try and create the thread again, but this time with a modified title
-                  liftIO $ print err
-                  eresult <- liftIO $ rw (postThread_ByBoardId [UnixTimestamp $ fromIntegral poster_time] board $
-                    ThreadRequest (sanitizeHtml $ subject <> (T.pack $ show poster_time)) Nothing is_sticky locked Nothing Nothing [] 0) (BSC.pack $ show user)
+            let subject' = if unique_id == 1 then subject else (subject <> (T.pack $ show unique_id))
 
-                  case eresult of
-                    (Left err) -> liftIO $ print err
-                    (Right thread_response) -> do
-                      createRedisMap "threadsName" id_topic (threadResponseId thread_response)
+            case (mboard, mtopic, muser) of
 
-                (Right thread_response) -> do
-                  createRedisMap "threadsName" id_topic (threadResponseId thread_response)
+              (Nothing, _, _) -> break ()
 
-            (_, _, _) -> return ()
+              (_, _, Nothing) -> break ()
+
+              ((Just board), Nothing, (Just user)) -> do
+                -- doesn't exist, created it
+                --
+                eresult <- liftIO $ rw (postThread_ByBoardId [UnixTimestamp $ fromIntegral poster_time] board $
+                  ThreadRequest (sanitizeHtml subject') Nothing is_sticky locked Nothing Nothing [] 0) (BSC.pack $ show user)
+
+                case eresult of
+                  (Left err)              -> liftIO $ print err
+                  (Right thread_response) -> do
+                    lift $ createRedisMap "threadsName" id_topic (threadResponseId thread_response)
+                    break ()
+
+              (_, _, _) -> break ()
 
       )
    )

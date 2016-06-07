@@ -10,7 +10,7 @@ module LN.SMF.Migration.User (
 
 
 
-import           Control.Break
+import           Control.Break                  (loop, break, lift)
 import           Control.Exception
 import           Control.Monad                  (forM_, void, when)
 import           Control.Monad.IO.Class         (liftIO)
