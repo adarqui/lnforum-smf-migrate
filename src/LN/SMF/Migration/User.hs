@@ -82,22 +82,26 @@ createLegacyUsers = do
 
         Nothing -> do
 
+          put $ MigrateState 0
+
           loop $ do
 
             lift $ modify (\(MigrateState n) -> MigrateState (n+1))
+            unique_id <- lift $ gets runMigrateState
+
+            let member_name' = if unique_id == 1 then member_name else (member_name <> (T.pack $ show unique_id))
 
             liftIO $ putStrLn $ show [show id_member, T.unpack member_name, T.unpack real_name, T.unpack email_address, show date_registered]
 
             eresult <- liftIO (try (rd (postUser [UnixTimestamp $ fromIntegral date_registered] $
-              UserRequest (fixDisplayNick member_name) real_name email_address "smf" (T.pack $ show id_member))) :: IO (Either SomeException (Either ApiError UserResponse)))
+              UserRequest member_name' real_name email_address "smf" (T.pack $ show id_member))) :: IO (Either SomeException (Either ApiError UserResponse)))
 
             case eresult of
-              (Left err) -> liftIO $ putStrLn $ show err
-              (Right (Left err)) -> liftIO $ putStrLn $ show err
+              (Left err)                    -> liftIO $ putStrLn $ show err
+              (Right (Left err))            -> liftIO $ putStrLn $ show err
               (Right (Right user_response)) -> do
                 lift $ createRedisMap "usersName" id_member (userResponseId user_response)
                 break ()
---                return ()
 
     ) -- forM_
 
