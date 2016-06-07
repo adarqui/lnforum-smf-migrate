@@ -47,7 +47,7 @@ createLegacyBoards = do
 
           liftIO $ print $ (id_cat, name)
 
-          eresult <- liftIO $ rd (postBoard_ByForumId [UnixTimestamp $ read "1240177678"] forum_id $ BoardRequest name Nothing Nothing [])
+          eresult <- liftIO $ rd (postBoard_ByForumId [UnixTimestamp $ read "1240177678"] forum_id $ BoardRequest name Nothing Nothing [] 0)
           case eresult of
             (Left err)             -> liftIO $ print err
             (Right board_response) -> do
@@ -79,7 +79,7 @@ createLegacyBoards = do
                 (Just parent) -> do
 
                   eresult <- liftIO $ rd (postBoard_ByBoardId [UnixTimestamp $ read "1240177678"] parent $
-                    BoardRequest (sanitizeHtml board_name) (Just $ sanitizeHtml board_desc) Nothing [])
+                    BoardRequest (sanitizeHtml board_name) (Just $ sanitizeHtml board_desc) Nothing [] 0)
 
                   case eresult of
                     (Left err) -> liftIO $ print err

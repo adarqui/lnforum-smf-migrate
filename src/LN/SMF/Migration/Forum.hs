@@ -34,7 +34,7 @@ createLegacyForum = do
 
       case forum_ids of
         [] -> do
-           eresult <- liftIO $ rd (postForum_ByOrganizationId [UnixTimestamp $ read "1240177678"] org_id $ ForumRequest "adarq-legacy" (Just "Legacy adarq.org forum") Nothing [] Public)
+           eresult <- liftIO $ rd (postForum_ByOrganizationId [UnixTimestamp $ read "1240177678"] org_id $ ForumRequest "adarq-legacy" (Just "Legacy adarq.org forum") Nothing [] Public 0)
            case eresult of
              (Left _) -> return ()
              (Right forum_response) -> do

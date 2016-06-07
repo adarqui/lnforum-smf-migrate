@@ -81,14 +81,14 @@ createLegacyThreads = do
               -- doesn't exist, created it
               --
               eresult <- liftIO $ rw (postThread_ByBoardId [UnixTimestamp $ fromIntegral poster_time] board $
-                ThreadRequest (sanitizeHtml subject) Nothing is_sticky locked Nothing Nothing []) (BSC.pack $ show user)
+                ThreadRequest (sanitizeHtml subject) Nothing is_sticky locked Nothing Nothing [] 0) (BSC.pack $ show user)
 
               case eresult of
                 (Left err) -> do
                   -- HACKJOB, try and create the thread again, but this time with a modified title
                   liftIO $ print err
                   eresult <- liftIO $ rw (postThread_ByBoardId [UnixTimestamp $ fromIntegral poster_time] board $
-                    ThreadRequest (sanitizeHtml $ subject <> (T.pack $ show poster_time)) Nothing is_sticky locked Nothing Nothing []) (BSC.pack $ show user)
+                    ThreadRequest (sanitizeHtml $ subject <> (T.pack $ show poster_time)) Nothing is_sticky locked Nothing Nothing [] 0) (BSC.pack $ show user)
 
                   case eresult of
                     (Left err) -> liftIO $ print err

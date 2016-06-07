@@ -61,7 +61,7 @@ createLegacyThreadPostLikes = do
 
                 let like_score = if score == 1 then Like else Dislike
 
-                eresult <- liftIO $ rw (postLike_ByThreadPostId' post $ LikeRequest like_score Nothing) (BSC.pack $ show user)
+                eresult <- liftIO $ rw (postLike_ByThreadPostId' post $ LikeRequest like_score Nothing 0) (BSC.pack $ show user)
 
                 case eresult of
                   (Left err) -> liftIO $ print err

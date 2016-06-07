@@ -73,7 +73,7 @@ createLegacyPms = do
             -- doesn't exist, created it
             --
             eresult <- liftIO $ rw (postPm_ByUserId [UnixTimestamp $ fromIntegral msgtime] user_to $
-              PmRequest (sanitizeHtml subject) (sanitizeHtml body)) (BSC.pack $ show user_from)
+              PmRequest (sanitizeHtml subject) (sanitizeHtml body) 0) (BSC.pack $ show user_from)
 
             case eresult of
               (Left err) -> liftIO $ print err
