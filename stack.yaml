@@ -6,4 +6,4 @@ packages:
 - '../ln-lib'
 - '../haskell-api-helpers'
 extra-deps: [fast-tagsoup-1.0.7, text-regex-replace-0.1.1.1, break-1.0.0]
-resolver: lts-5.5
+resolver: lts-6.4
