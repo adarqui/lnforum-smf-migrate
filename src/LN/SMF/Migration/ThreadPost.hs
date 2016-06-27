@@ -68,11 +68,10 @@ createLegacyThreadPosts = do
 
               case (mtopic, muser) of
                 (Just topic, Just user) -> do
-                  eresult <- liftIO $ rw (postThreadPost_ByThreadId [UnixTimestamp poster_time] topic $
+                  e_result <- rw (postThreadPost_ByThreadId [UnixTimestamp poster_time] topic $
                     ThreadPostRequest (Just subject) (PostDataBBCode body) [] [] 0) (BSC.pack $ show user)
---                    ThreadPostRequest (Just $ sanitizeHtml subject) (PostDataBBCode $ sanitizeHtml body) [] []) (BSC.pack $ show user)
 
-                  case eresult of
+                  case e_result of
                     (Left err) -> liftIO $ print err
                     (Right thread_post_response) -> do
                       createRedisMap "threadPostsName" id_msg (threadPostResponseId thread_post_response)
@@ -98,12 +97,12 @@ deleteLegacyThreadPosts = do
 
       liftIO $ putStrLn $ show thread_post_id
 
-      eresult <- liftIO $ rd (getThreadPost' thread_post_id)
-      case eresult of
+      e_result <- rd $ getThreadPost' thread_post_id
+      case e_result of
         Left err -> liftIO $ print err
         Right thread_post_response -> do
 
-          void $ liftIO $ rw (deleteThreadPost' thread_post_id) (BSC.pack $ show $ threadPostResponseUserId thread_post_response)
+          void $ rw (deleteThreadPost' thread_post_id) (BSC.pack $ show $ threadPostResponseUserId thread_post_response)
           deleteRedisMapByLnId "threadPostsName" thread_post_id
     )
 

@@ -8,9 +8,7 @@ module LN.SMF.Migration.Thread (
 
 
 
-import           Haskell.Api.Helpers
 import           Control.Break                  (loop, break, lift)
-import           Control.Exception              (SomeException (..), try)
 import           Control.Monad                  (forM_, when)
 import           Control.Monad.IO.Class         (liftIO)
 import           Control.Monad.Trans.RWS
@@ -77,7 +75,7 @@ createLegacyThreads = do
 
           loop $ do
 
-            lift $ modify (\(MigrateState n) -> MigrateState (n+1)) 
+            lift $ modify (\(MigrateState n) -> MigrateState (n+1))
             unique_id <- lift $ gets runMigrateState
 
             when (unique_id == 10) (break ())
@@ -93,10 +91,10 @@ createLegacyThreads = do
               ((Just board), Nothing, (Just user)) -> do
                 -- doesn't exist, created it
                 --
-                eresult <- liftIO (try (rw (postThread_ByBoardId [UnixTimestamp $ fromIntegral poster_time] board $
-                  ThreadRequest (sanitizeHtml subject') Nothing is_sticky locked Nothing Nothing [] 0) (BSC.pack $ show user)) :: IO (Either SomeException (Either ApiError ThreadResponse)))
+                e_result <- lift $ rw' (postThread_ByBoardId [UnixTimestamp $ fromIntegral poster_time] board $
+                  ThreadRequest (sanitizeHtml subject') Nothing is_sticky locked Nothing Nothing [] 0) (BSC.pack $ show user)
 
-                case eresult of
+                case e_result of
                   (Left err)                      -> liftIO $ print err
                   (Right (Left err))              -> liftIO $ print err
                   (Right (Right thread_response)) -> do
@@ -122,13 +120,13 @@ deleteLegacyThreads = do
 
       liftIO $ putStrLn $ show thread_id
 
-      get_result <- liftIO (try (rd (getThread' thread_id)) :: IO (Either SomeException (Either ApiError ThreadResponse)))
+      get_result <- rd' $ getThread' thread_id
       case get_result of
         Left err -> liftIO $ print err
         Right (Left err) ->  liftIO $ print err
         Right (Right thread_response) -> do
 
-          del_result <- liftIO (try (rw (deleteThread' thread_id) (BSC.pack $ show $ threadResponseUserId thread_response)) :: IO (Either SomeException (Either ApiError ())))
+          del_result <- rw' (deleteThread' thread_id) (BSC.pack $ show $ threadResponseUserId thread_response)
           case del_result of
             Left err -> liftIO $ print err
             Right _ -> do

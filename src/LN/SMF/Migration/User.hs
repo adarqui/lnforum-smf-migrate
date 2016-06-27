@@ -11,7 +11,6 @@ module LN.SMF.Migration.User (
 
 
 import           Control.Break                  (loop, break, lift)
-import           Control.Exception
 import           Control.Monad                  (forM_, void, when)
 import           Control.Monad.IO.Class         (liftIO)
 import           Control.Monad.Trans.RWS
@@ -20,7 +19,6 @@ import           Data.Monoid                    ((<>))
 import           Data.Text                      (Text)
 import qualified Data.Text                      as T
 import           Database.MySQL.Simple
-import           Haskell.Api.Helpers
 import           LN.Api
 import           LN.SMF.Migration.Connect.Redis
 import           LN.SMF.Migration.Control
@@ -95,10 +93,10 @@ createLegacyUsers = do
 
             liftIO $ putStrLn $ show [show id_member, T.unpack member_name, T.unpack real_name, T.unpack email_address, show date_registered]
 
-            eresult <- liftIO (try (rd (postUser [UnixTimestamp $ fromIntegral date_registered] $
-              UserRequest member_name' real_name email_address "smf" (T.pack $ show id_member) Nothing)) :: IO (Either SomeException (Either ApiError UserResponse)))
+            e_result <- lift $ rd' (postUser [UnixTimestamp $ fromIntegral date_registered] $
+              UserRequest member_name' real_name email_address "smf" (T.pack $ show id_member) Nothing)
 
-            case eresult of
+            case e_result of
               (Left err)                    -> liftIO $ putStrLn $ show err
               (Right (Left err))            -> liftIO $ putStrLn $ show err
               (Right (Right user_response)) -> do
@@ -125,7 +123,7 @@ deleteLegacyUsers = do
         then return ()
         else do
           liftIO $ putStrLn $ show user_id
-          void $ liftIO (try (rd (deleteUser' user_id)) :: IO (Either SomeException (Either ApiError ())))
+          void $ rd $ deleteUser' user_id
           deleteRedisMapByLnId "usersName" user_id
     )
 

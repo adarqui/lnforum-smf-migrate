@@ -8,7 +8,7 @@ module LN.SMF.Migration.Organization (
 
 
 
-import           Haskell.Api.Helpers
+import           Control.Monad                  (void)
 import           Control.Monad.IO.Class         (liftIO)
 import           LN.Api
 import           LN.SMF.Migration.Connect.Redis
@@ -28,8 +28,9 @@ createLegacyOrganization = do
     (_:_) -> liftIO $ putStrLn "unable to add organization"
     [] -> do
 
-      eresult <- liftIO $ rd (postOrganization [UnixTimestamp $ read "1240177678"] $ OrganizationRequest "legacy" (Just "Legacy Forum") "ADARQ" "FL" "andrew.darqui@gmail.com" Membership_Join [] Nothing Public 0)
-      case eresult of
+      e_result <- rd $ postOrganization [UnixTimestamp $ read "1240177678"] $
+        OrganizationRequest "legacy" (Just "Legacy Forum") "ADARQ" "FL" "andrew.darqui@gmail.com" Membership_Join [] Nothing Public 0
+      case e_result of
         (Left err) -> liftIO $ print err
         (Right org_response) -> do
           createRedisMap "organizationsName" 0 (organizationResponseId org_response)
@@ -46,6 +47,6 @@ deleteLegacyOrganization = do
     [] -> return ()
     (x:_) -> do
 
-      liftIO $ rd (deleteOrganization' x)
+      void $ rd $ deleteOrganization' x
       deleteRedisMapByLnId "organizationsName" x
       return ()

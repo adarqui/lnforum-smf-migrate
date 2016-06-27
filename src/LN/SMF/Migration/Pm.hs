@@ -8,14 +8,12 @@ module LN.SMF.Migration.Pm (
 
 
 
-import           Haskell.Api.Helpers
-import           Data.Monoid ((<>))
-import           Control.Exception              (SomeException (..), try)
 import           Control.Monad                  (forM_)
 import           Control.Monad.IO.Class         (liftIO)
 import           Control.Monad.Trans.RWS
 import qualified Data.ByteString.Char8          as BSC
 import           Data.Int
+import           Data.Monoid                    ((<>))
 import           Data.Text                      (Text)
 import           Database.MySQL.Simple
 import           LN.Api
@@ -72,7 +70,7 @@ createLegacyPms = do
           ((Just user_from), (Just user_to)) -> do
             -- doesn't exist, created it
             --
-            eresult <- liftIO $ rw (postPm_ByUserId [UnixTimestamp $ fromIntegral msgtime] user_to $
+            eresult <- rw (postPm_ByUserId [UnixTimestamp $ fromIntegral msgtime] user_to $
               PmRequest (sanitizeHtml subject) (sanitizeHtml body) 0) (BSC.pack $ show user_from)
 
             case eresult of
@@ -105,7 +103,7 @@ deleteLegacyPms = do
         Nothing -> return ()
         Just pm_user_id -> do
 
-          del_result <- liftIO (try (rw (deletePm' pm_id) (BSC.pack $ show pm_user_id)) :: IO (Either SomeException (Either ApiError ())))
+          del_result <- rw (deletePm' pm_id) (BSC.pack $ show pm_user_id)
           case del_result of
             Left err -> liftIO $ putStrLn $ show err
             Right _ -> do
