@@ -1,9 +1,12 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
 
 
-import System.Environment
+import qualified Data.Text          as T
 import           LN.SMF.Migration
+import           System.Environment
 
 
 
@@ -13,8 +16,8 @@ usage = putStrLn "ln-smf-migrate [migrate <limit>|unmigrate]"
 
 main :: IO ()
 main = do
-  argv <- getArgs
+  argv <- (map T.pack) <$> getArgs
   case argv of
-    ["migrate", n] -> migrateSMF (read n)
-    ["unmigrate"]  -> unMigrateSMF
+    [redis_host, mysql_host, api_host, "migrate", n] -> migrateSMF redis_host mysql_host api_host (read $ T.unpack n)
+    [redis_host, mysql_host, api_host, "unmigrate"]  -> unMigrateSMF redis_host mysql_host api_host
     _              -> usage

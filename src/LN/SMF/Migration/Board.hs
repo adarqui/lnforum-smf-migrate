@@ -47,7 +47,7 @@ createLegacyBoards = do
 
           liftIO $ print $ (id_cat, name)
 
-          eresult <- liftIO $ rd (postBoard_ByForumId [UnixTimestamp $ read "1240177678"] forum_id $ BoardRequest name Nothing Nothing [] 0)
+          eresult <- liftIO $ rd (postBoard_ByForumId [UnixTimestamp $ read "1240177678"] forum_id $ BoardRequest name Nothing False True True [] Nothing [] 0)
           case eresult of
             (Left err)             -> liftIO $ print err
             (Right board_response) -> do
@@ -79,7 +79,7 @@ createLegacyBoards = do
                 (Just parent) -> do
 
                   eresult <- liftIO $ rd (postBoard_ByBoardId [UnixTimestamp $ read "1240177678"] parent $
-                    BoardRequest (sanitizeHtml board_name) (Just $ sanitizeHtml board_desc) Nothing [] 0)
+                    BoardRequest (sanitizeHtml board_name) (Just $ sanitizeHtml board_desc) False True True [] Nothing [] 0)
 
                   case eresult of
                     (Left err) -> liftIO $ print err
@@ -103,7 +103,10 @@ deleteLegacyBoards = do
 
       liftIO $ putStrLn $ show board_id
 
-      void $ liftIO (try (rd (deleteBoard' board_id)) :: IO (Either SomeException (Either ApiError ())))
+--      void $ liftIO (try (rd (deleteBoard' board_id)) :: IO (Either SomeException (Either ApiError ())))
+--      void $ (try (rd' (deleteBoard' board_id)) :: MigrateRWST (Either SomeException (Either ApiError ())))
+      void $ rd' (deleteBoard' board_id)
+
       deleteRedisMapByLnId "boardsName" board_id
     )
 

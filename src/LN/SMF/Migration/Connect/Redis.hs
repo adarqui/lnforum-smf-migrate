@@ -18,24 +18,26 @@ module LN.SMF.Migration.Connect.Redis (
 
 
 
+import qualified Data.Text as T (unpack)
 import           Control.Monad
 import           Control.Monad.IO.Class
 import           Data.ByteString          (ByteString)
 import qualified Data.ByteString.Char8    as B
 import           Data.Int
 import           Data.Monoid              ((<>))
+import           Data.Text                (Text)
 import           Database.Redis           hiding (get)
 import qualified Database.Redis           as R
 import           LN.SMF.Migration.Control
 
 
 
-connectRedis :: IO Connection
-connectRedis = do
+connectRedis :: Text -> IO Connection
+connectRedis redis_host = do
   connect info'
   where
   info' = defaultConnectInfo {
-    connectHost = "10.0.3.10"
+    connectHost = T.unpack redis_host
   }
 
 

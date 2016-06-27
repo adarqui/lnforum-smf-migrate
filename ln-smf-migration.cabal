@@ -59,6 +59,7 @@ executable ln-smf-migrate
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -O2
   build-depends:       base
                      , ln-smf-migration
+                     , text
   default-language:    Haskell2010
 
 test-suite ln-smf-migration-test

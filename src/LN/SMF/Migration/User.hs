@@ -96,7 +96,7 @@ createLegacyUsers = do
             liftIO $ putStrLn $ show [show id_member, T.unpack member_name, T.unpack real_name, T.unpack email_address, show date_registered]
 
             eresult <- liftIO (try (rd (postUser [UnixTimestamp $ fromIntegral date_registered] $
-              UserRequest member_name' real_name email_address "smf" (T.pack $ show id_member))) :: IO (Either SomeException (Either ApiError UserResponse)))
+              UserRequest member_name' real_name email_address "smf" (T.pack $ show id_member) Nothing)) :: IO (Either SomeException (Either ApiError UserResponse)))
 
             case eresult of
               (Left err)                    -> liftIO $ putStrLn $ show err

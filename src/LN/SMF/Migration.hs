@@ -11,6 +11,7 @@ module LN.SMF.Migration (
 
 import           Control.Monad                   (void)
 import           Control.Monad.Trans.RWS
+import           Data.Text                       (Text)
 import           LN.SMF.Migration.Board          as A
 import           LN.SMF.Migration.Connect        as A
 import           LN.SMF.Migration.Control        as A
@@ -29,8 +30,8 @@ import           LN.SMF.Migration.User           as A
 --
 -- We should be able to run this multiple times without problem.
 --
-migrateSMF :: Int -> IO ()
-migrateSMF limit = migrateRWST limit go
+migrateSMF :: Text -> Text -> Text ->  Int -> IO ()
+migrateSMF redis_host mysql_host api_host limit = migrateRWST redis_host mysql_host api_host limit go
   where
   go = do
     createSuperUser
@@ -52,8 +53,8 @@ migrateSMF limit = migrateRWST limit go
 --
 -- We should be able to run this multiple times without problem.
 --
-unMigrateSMF :: IO ()
-unMigrateSMF = migrateRWST 0 go
+unMigrateSMF :: Text -> Text -> Text -> IO ()
+unMigrateSMF redis_host mysql_host api_host = migrateRWST redis_host mysql_host api_host 0 go
   where
   go = do
     -- deleteUserProfiles
@@ -70,9 +71,10 @@ unMigrateSMF = migrateRWST 0 go
 
 
 
-migrateRWST :: forall w a. Int -> RWST MigrateReader w MigrateState IO a -> IO ()
-migrateRWST limit go = do
-  mysql <- connectMySQL
-  redis <- connectRedis
-  void $ evalRWST go (MigrateReader redis mysql limit) (MigrateState 0)
+migrateRWST :: forall w a. Text -> Text -> Text -> Int -> RWST MigrateReader w MigrateState IO a -> IO ()
+migrateRWST redis_host mysql_host api_host limit go = do
+  mysql <- connectMySQL mysql_host
+  redis <- connectRedis redis_host
+  let api_opts = apiOpts { apiUrl = api_host }
+  void $ evalRWST go (MigrateReader redis_host redis mysql_host mysql api_host api_opts limit) (MigrateState 0)
   return ()

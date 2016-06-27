@@ -6,17 +6,19 @@ module LN.SMF.Migration.Connect.MySQL (
 
 
 
+import           Data.Text             (Text)
+import qualified Data.Text             as T (unpack)
 import           Database.MySQL.Simple
 
 
 
-connectMySQL :: IO Connection
-connectMySQL = do
+connectMySQL :: Text -> IO Connection
+connectMySQL mysql_host = do
   connect info
   where
   info = defaultConnectInfo {
-    connectHost = "10.0.3.14",
-    connectUser = "root",
+    connectHost     = T.unpack mysql_host,
+    connectUser     = "root",
     connectPassword = "root",
     connectDatabase = "adarq_forum"
   }
