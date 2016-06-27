@@ -40,6 +40,7 @@ library
                      , hakyll
                      , hedis
                      , monad-loops
+                     , mtl
                      , mysql-simple
                      , persistent
                      , persistent-mysql
