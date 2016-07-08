@@ -1,9 +1,9 @@
 flags: {}
 packages:
 - '.'
-- '../ln-types'
 - '../ln-api'
 - '../ln-lib'
+- '../haskell-ln-types'
 - '../haskell-api-helpers'
 extra-deps: [fast-tagsoup-1.0.7, text-regex-replace-0.1.1.1, break-1.0.0]
 resolver: lts-6.4

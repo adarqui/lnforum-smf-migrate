@@ -1,17 +1,14 @@
 build:
-	stack build --file-watch
+	stack build --fast
+
+build-watch:
+	stack build --fast --file-watch
+
+clean:
+	stack clean
 
 docs:
 	cabal haddock --hyperlink-source
-
-exec:
-	echo exec
-
-exec_prod:
-	echo exec
-
-exec_prod_sudo:
-	echo exec
 
 ghci:
 	echo ghci
