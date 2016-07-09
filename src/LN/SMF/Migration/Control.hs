@@ -16,16 +16,17 @@ module LN.SMF.Migration.Control (
 
 
 
-import Data.ByteString (ByteString)
-import Control.Exception
-import Control.Monad.Trans.Reader (ReaderT)
-import Control.Monad.Trans
-import Control.Monad.Trans.RWS
-import           Control.Monad.Trans.RWS as A
-import           Data.Text               (Text)
-import qualified Database.MySQL.Simple   as My
-import qualified Database.Redis          as R
+import           Control.Exception
+import           Control.Monad.Trans
+import           Control.Monad.Trans.Reader (ReaderT)
+import           Control.Monad.Trans.RWS
+import           Control.Monad.Trans.RWS    as A
+import           Data.ByteString            (ByteString)
+import           Data.Text                  (Text)
+import qualified Database.MySQL.Simple      as My
+import qualified Database.Redis             as R
 import           Haskell.Api.Helpers
+import           LN.T.Error                 (ApplicationError)
 
 
 
@@ -55,8 +56,8 @@ type MigrateRWST = RWST MigrateReader MigrateWriter MigrateState IO
 
 rd
   :: (Monoid w, MonadIO m)
-  => ReaderT ApiOptions IO (Either ApiError a)
-  -> RWST MigrateReader w s m (Either ApiError a)
+  => ReaderT ApiOptions IO (Either (ApiError ApplicationError) a)
+  -> RWST MigrateReader w s m (Either (ApiError ApplicationError) a)
 rd actions = do
   opts <- asks rApiOpts
   liftIO $ runWith actions $ opts { apiKey = Just "1" }
@@ -65,8 +66,8 @@ rd actions = do
 
 rd'
   :: (Monoid w, MonadIO m)
-  => ReaderT ApiOptions IO (Either ApiError a)
-  -> RWST MigrateReader w s m (Either SomeException (Either ApiError a))
+  => ReaderT ApiOptions IO (Either (ApiError ApplicationError) a)
+  -> RWST MigrateReader w s m (Either SomeException (Either (ApiError ApplicationError) a))
 rd' actions = do
   opts <- asks rApiOpts
   liftIO $ try (runWith actions $ opts { apiKey = Just "1" })
@@ -75,9 +76,9 @@ rd' actions = do
 
 rw
   :: (Monoid w, MonadIO m)
-  => ReaderT ApiOptions IO (Either ApiError a)
+  => ReaderT ApiOptions IO (Either (ApiError ApplicationError) a)
   -> ByteString
-  -> RWST MigrateReader w s m (Either ApiError a)
+  -> RWST MigrateReader w s m (Either (ApiError ApplicationError) a)
 rw actions s = do
   opts <- asks rApiOpts
   liftIO $ runWith actions $ opts { apiKey = Just s }
@@ -86,9 +87,9 @@ rw actions s = do
 
 rw'
   :: (Monoid w, MonadIO m)
-  => ReaderT ApiOptions IO (Either ApiError a)
+  => ReaderT ApiOptions IO (Either (ApiError ApplicationError) a)
   -> ByteString
-  -> RWST MigrateReader w s m (Either SomeException (Either ApiError a))
+  -> RWST MigrateReader w s m (Either SomeException (Either (ApiError ApplicationError) a))
 rw' actions s = do
   opts <- asks rApiOpts
   liftIO $ try $ runWith actions $ opts { apiKey = Just s }
