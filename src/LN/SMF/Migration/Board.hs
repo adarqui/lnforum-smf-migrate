@@ -8,8 +8,6 @@ module LN.SMF.Migration.Board (
 
 
 
-import           Haskell.Api.Helpers
-import           Control.Exception              (SomeException (..), try)
 import           Control.Monad                  (forM_, void)
 import           Control.Monad.IO.Class         (liftIO)
 import           Control.Monad.Trans.RWS
@@ -57,9 +55,9 @@ createLegacyBoards = do
 
       forM_
         categories
-        (\(id_cat :: Int64, _) -> do
+        (\(cat_id :: Int64, _) -> do
 
-          boards <- liftIO $ query mysql "select id_board, id_parent, id_cat, name, description from smf_boards where id_cat = ?" (Only id_cat)
+          boards <- liftIO $ query mysql "select id_board, id_parent, id_cat, name, description from smf_boards where id_cat = ?" (Only cat_id)
 
           forM_
             (filter (\(id_board, _, _, _, _) -> not $ id_board `elem` board_ids) boards)
