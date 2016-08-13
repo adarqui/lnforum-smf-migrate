@@ -29,7 +29,7 @@ createLegacyOrganization = do
     [] -> do
 
       e_result <- rd $ postOrganization [UnixTimestamp $ read "1240177678"] $
-        OrganizationRequest "legacy" (Just "Legacy Forum") "ADARQ" "FL" "andrew.darqui@gmail.com" Membership_Join [] Nothing Public 0
+        OrganizationRequest "legacy" (Just "Legacy Forum") "ADARQ" "FL" "andrew.darqui@gmail.com" Membership_Join [] Nothing Public 0 Nothing
       case e_result of
         (Left err) -> liftIO $ print err
         (Right org_response) -> do

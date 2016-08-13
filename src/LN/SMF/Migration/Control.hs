@@ -26,6 +26,8 @@ import           Data.Text                  (Text)
 import qualified Database.MySQL.Simple      as My
 import qualified Database.Redis             as R
 import           Haskell.Api.Helpers
+import           Haskell.Api.Helpers.Shared
+
 import           LN.T.Error                 (ApplicationError)
 
 
@@ -40,7 +42,7 @@ data MigrateReader = MigrateReader {
   rMySQLHost :: Text,
   rMySQL     :: My.Connection,
   rApiHost   :: Text,
-  rApiOpts   :: ApiOptions,
+  rApiOpts   :: ApiOptions SpecificApiOptions,
   rLimit     :: Int
 }
 
@@ -56,7 +58,7 @@ type MigrateRWST = RWST MigrateReader MigrateWriter MigrateState IO
 
 rd
   :: (Monoid w, MonadIO m)
-  => ReaderT ApiOptions IO (Either (ApiError ApplicationError) a)
+  => ReaderT (ApiOptions SpecificApiOptions) IO (Either (ApiError ApplicationError) a)
   -> RWST MigrateReader w s m (Either (ApiError ApplicationError) a)
 rd actions = do
   opts <- asks rApiOpts
@@ -66,7 +68,7 @@ rd actions = do
 
 rd'
   :: (Monoid w, MonadIO m)
-  => ReaderT ApiOptions IO (Either (ApiError ApplicationError) a)
+  => ReaderT (ApiOptions SpecificApiOptions) IO (Either (ApiError ApplicationError) a)
   -> RWST MigrateReader w s m (Either SomeException (Either (ApiError ApplicationError) a))
 rd' actions = do
   opts <- asks rApiOpts
@@ -76,7 +78,7 @@ rd' actions = do
 
 rw
   :: (Monoid w, MonadIO m)
-  => ReaderT ApiOptions IO (Either (ApiError ApplicationError) a)
+  => ReaderT (ApiOptions SpecificApiOptions) IO (Either (ApiError ApplicationError) a)
   -> ByteString
   -> RWST MigrateReader w s m (Either (ApiError ApplicationError) a)
 rw actions s = do
@@ -87,7 +89,7 @@ rw actions s = do
 
 rw'
   :: (Monoid w, MonadIO m)
-  => ReaderT ApiOptions IO (Either (ApiError ApplicationError) a)
+  => ReaderT (ApiOptions SpecificApiOptions) IO (Either (ApiError ApplicationError) a)
   -> ByteString
   -> RWST MigrateReader w s m (Either SomeException (Either (ApiError ApplicationError) a))
 rw' actions s = do
@@ -96,12 +98,12 @@ rw' actions s = do
 
 
 
-apiOpts :: ApiOptions
+apiOpts :: ApiOptions SpecificApiOptions
 apiOpts = ApiOptions {
-  apiUrl = "https://leuro.adarq.org",
-  apiPrefix = "api",
-  apiKey = Nothing,
-  apiKeyHeader = Just "z-authorization",
-  apiWreqOptions = defaultWreqOptions,
-  apiDebug = True
+  apiUrl       = "http://dev.adarq.org",
+  apiPrefix    = "api",
+  apiKey       = Nothing,
+  apiKeyHeader = Just "x-api-authorization",
+  apiOptions   = defaultSpecificApiOptions,
+  apiDebug     = True
 }

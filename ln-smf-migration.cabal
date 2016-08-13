@@ -32,7 +32,7 @@ library
   build-depends:       base
                      , bytestring
                      , break
-                     , fast-tagsoup
+--                     , fast-tagsoup
                      , hakyll
                      , hedis
                      , monad-loops
@@ -47,11 +47,12 @@ library
                      , time
                      , transformers
                      , wreq
-                     , text-regex-replace
+--                     , text-regex-replace
                      , ln-api
                      , ln-lib
                      , haskell-ln-types
                      , haskell-api-helpers
+                     , haskell-api-helpers-shared
   default-language:    Haskell2010
 
 executable ln-smf-migrate

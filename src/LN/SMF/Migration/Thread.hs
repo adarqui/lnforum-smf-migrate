@@ -92,7 +92,7 @@ createLegacyThreads = do
                 -- doesn't exist, created it
                 --
                 e_result <- lift $ rw' (postThread_ByBoardId [UnixTimestamp $ fromIntegral poster_time] board $
-                  ThreadRequest (sanitizeHtml subject') Nothing is_sticky locked Nothing Nothing [] 0) (BSC.pack $ show user)
+                  ThreadRequest (sanitizeHtml subject') Nothing is_sticky locked Nothing Nothing [] 0 Nothing) (BSC.pack $ show user)
 
                 case e_result of
                   (Left err)                      -> liftIO $ print err

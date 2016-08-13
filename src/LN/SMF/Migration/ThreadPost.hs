@@ -69,7 +69,7 @@ createLegacyThreadPosts = do
               case (mtopic, muser) of
                 (Just topic, Just user) -> do
                   e_result <- rw (postThreadPost_ByThreadId [UnixTimestamp poster_time] topic $
-                    ThreadPostRequest (Just subject) (PostDataBBCode body) [] [] 0) (BSC.pack $ show user)
+                    ThreadPostRequest (Just subject) (PostDataBBCode body) [] [] 0 Nothing Nothing) (BSC.pack $ show user)
 
                   case e_result of
                     (Left err) -> liftIO $ print err

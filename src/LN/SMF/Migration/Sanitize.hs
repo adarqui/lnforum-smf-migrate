@@ -16,9 +16,9 @@ module LN.SMF.Migration.Sanitize (
 import           Data.Char
 import           Data.Maybe
 import           Data.Text              (Text)
-import qualified Data.Text              as T
-import           Data.Text.ICU.Replace
-import           Text.HTML.TagSoup.Fast
+import qualified Data.Text              as Text
+-- import           Data.Text.ICU.Replace
+-- import           Text.HTML.TagSoup.Fast
 
 
 
@@ -30,7 +30,7 @@ replaceNickChar c = Just c
 
 
 fixNick :: Text -> Text
-fixNick = T.pack . catMaybes . map replaceNickChar . T.unpack . T.toLower
+fixNick = Text.pack . catMaybes . map replaceNickChar . Text.unpack . Text.toLower
 
 
 
@@ -41,7 +41,7 @@ replaceDisplayNickChar c = Just c
 
 
 fixDisplayNick :: Text -> Text
-fixDisplayNick = T.pack . catMaybes . map replaceDisplayNickChar . T.unpack
+fixDisplayNick = Text.pack . catMaybes . map replaceDisplayNickChar . Text.unpack
 
 
 
@@ -50,11 +50,11 @@ titleify s =
   case fields of
     []       -> s
     [x]      -> x
-    (x:rest) -> T.concat $ x : map T.toTitle rest
+    (x:rest) -> Text.concat $ x : map Text.toTitle rest
   where
-  fields = T.splitOn " " s
+  fields = Text.splitOn " " s
 
 
 
 sanitizeHtml :: Text -> Text
-sanitizeHtml = replaceAll "<br />" "\n" . unescapeHtmlT
+sanitizeHtml = Text.replace "<br />" "\n" -- . unescapeHtmlT
