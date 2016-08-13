@@ -112,9 +112,7 @@ createSmfUsers = do
 
                 liftIO $ putStrLn $ show [show id_member, T.unpack member_name, T.unpack real_name, T.unpack email_address, show date_registered]
 
-                -- see if this user has already been added,
-                -- if so ...
-                -- if not ...
+                -- Attempt to add this user
                 --
                 e_result <- lift $ rd' (postUser [UnixTimestamp $ fromIntegral date_registered] $
                   UserRequest member_name' real_name email_address "smf" (T.pack $ show id_member) Nothing)
