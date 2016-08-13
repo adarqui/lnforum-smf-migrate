@@ -28,13 +28,13 @@ weird:
 LIMIT=100
 
 migrate-dev:
-	./bin/ln-smf-migrate 127.0.0.1 10.0.3.14 http://dev.adarq.org migrate $(LIMIT)
+	~/.local/bin/ln-smf-migrate ${KEY} ${ORG} 127.0.0.1 10.0.3.14 http://dev.adarq.org migrate $(LIMIT)
 
 unmigrate-dev:
-	./bin/ln-smf-migrate 127.0.0.1 10.0.3.14 http://dev.adarq.org unmigrate
+	~/.local/bin/ln-smf-migrate ${KEY} ${ORG} 127.0.0.1 10.0.3.14 http://dev.adarq.org unmigrate
 
 migrate:
-	./bin/ln-smf-migrate 10.0.3.10 10.0.3.14 https://leuro.adarq.org migrate $(LIMIT)
+	~/.local/bin/ln-smf-migrate ${KEY} ${ORG} 10.0.3.10 10.0.3.14 https://leuro.adarq.org migrate $(LIMIT)
 
 unmigrate:
-	./bin/ln-smf-migrate 10.0.3.10 10.0.3.14 https://leuro.adarq.org unmigrate
+	~/.local/bin/ln-smf-migrate ${KEY} ${ORG} 10.0.3.10 10.0.3.14 https://leuro.adarq.org unmigrate

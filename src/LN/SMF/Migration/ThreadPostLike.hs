@@ -61,7 +61,7 @@ createLegacyThreadPostLikes = do
 
                 let like_score = if score == 1 then Like else Dislike
 
-                e_result <- rw (postLike_ByThreadPostId' post $ LikeRequest like_score Nothing 0) (BSC.pack $ show user)
+                e_result <- rw (postLike_ByThreadPostId' post $ LikeRequest like_score Nothing 0) user
 
                 case e_result of
                   (Left err) -> liftIO $ print err
@@ -90,7 +90,7 @@ deleteLegacyThreadPostLikes = do
         Left err -> liftIO $ print err
         Right like_response -> do
 
-          void $ rw (deleteLike' thread_post_like_id) (BSC.pack $ show $ likeResponseUserId like_response)
+          void $ rw (deleteLike' thread_post_like_id) (likeResponseUserId like_response)
           deleteRedisMapByLnId "threadPostLikesName" thread_post_like_id
     )
 

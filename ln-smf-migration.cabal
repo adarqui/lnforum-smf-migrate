@@ -43,6 +43,7 @@ library
                      , persistent-postgresql
                      , persistent-template
                      , postgresql-simple
+                     , string-conversions
                      , text
                      , time
                      , transformers

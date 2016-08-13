@@ -71,7 +71,7 @@ createLegacyPms = do
             -- doesn't exist, created it
             --
             eresult <- rw (postPm_ByUserId [UnixTimestamp $ fromIntegral msgtime] user_to $
-              PmRequest (sanitizeHtml subject) (sanitizeHtml body) 0) (BSC.pack $ show user_from)
+              PmRequest (sanitizeHtml subject) (sanitizeHtml body) 0) user_from
 
             case eresult of
               (Left err) -> liftIO $ print err
@@ -103,7 +103,7 @@ deleteLegacyPms = do
         Nothing -> return ()
         Just pm_user_id -> do
 
-          del_result <- rw (deletePm' pm_id) (BSC.pack $ show pm_user_id)
+          del_result <- rw (deletePm' pm_id) pm_user_id
           case del_result of
             Left err -> liftIO $ putStrLn $ show err
             Right _ -> do

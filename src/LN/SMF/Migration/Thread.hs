@@ -92,7 +92,7 @@ createLegacyThreads = do
                 -- doesn't exist, created it
                 --
                 e_result <- lift $ rw' (postThread_ByBoardId [UnixTimestamp $ fromIntegral poster_time] board $
-                  ThreadRequest (sanitizeHtml subject') Nothing is_sticky locked Nothing Nothing [] 0 Nothing) (BSC.pack $ show user)
+                  ThreadRequest (sanitizeHtml subject') Nothing is_sticky locked Nothing Nothing [] 0 Nothing) user
 
                 case e_result of
                   (Left err)                      -> liftIO $ print err
@@ -126,7 +126,7 @@ deleteLegacyThreads = do
         Right (Left err) ->  liftIO $ print err
         Right (Right thread_response) -> do
 
-          del_result <- rw' (deleteThread' thread_id) (BSC.pack $ show $ threadResponseUserId thread_response)
+          del_result <- rw' (deleteThread' thread_id) (threadResponseUserId thread_response)
           case del_result of
             Left err -> liftIO $ print err
             Right _ -> do

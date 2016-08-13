@@ -23,6 +23,9 @@ import           Control.Monad.Trans.RWS
 import           Control.Monad.Trans.RWS    as A
 import           Data.ByteString            (ByteString)
 import           Data.Text                  (Text)
+import Data.Monoid ((<>))
+import Data.String.Conversions (cs)
+import Data.Int (Int64)
 import qualified Database.MySQL.Simple      as My
 import qualified Database.Redis             as R
 import           Haskell.Api.Helpers
@@ -37,6 +40,8 @@ data MigrateState = MigrateState { runMigrateState :: Int }
 
 
 data MigrateReader = MigrateReader {
+  rSuperKey  :: ByteString,
+  rOrgSid    :: Text,
   rRedisHost :: Text,
   rRedis     :: R.Connection,
   rMySQLHost :: Text,
@@ -61,8 +66,9 @@ rd
   => ReaderT (ApiOptions SpecificApiOptions) IO (Either (ApiError ApplicationError) a)
   -> RWST MigrateReader w s m (Either (ApiError ApplicationError) a)
 rd actions = do
-  opts <- asks rApiOpts
-  liftIO $ runWith actions $ opts { apiKey = Just "1" }
+  opts      <- asks rApiOpts
+  super_key <- asks rSuperKey
+  liftIO $ runWith actions $ opts { apiKey = Just super_key }
 
 
 
@@ -71,30 +77,33 @@ rd'
   => ReaderT (ApiOptions SpecificApiOptions) IO (Either (ApiError ApplicationError) a)
   -> RWST MigrateReader w s m (Either SomeException (Either (ApiError ApplicationError) a))
 rd' actions = do
-  opts <- asks rApiOpts
-  liftIO $ try (runWith actions $ opts { apiKey = Just "1" })
+  opts      <- asks rApiOpts
+  super_key <- asks rSuperKey
+  liftIO $ try (runWith actions $ opts { apiKey = Just super_key })
 
 
 
 rw
   :: (Monoid w, MonadIO m)
   => ReaderT (ApiOptions SpecificApiOptions) IO (Either (ApiError ApplicationError) a)
-  -> ByteString
+  -> Int64
   -> RWST MigrateReader w s m (Either (ApiError ApplicationError) a)
-rw actions s = do
-  opts <- asks rApiOpts
-  liftIO $ runWith actions $ opts { apiKey = Just s }
+rw actions user_id = do
+  opts      <- asks rApiOpts
+  super_key <- asks rSuperKey
+  liftIO $ runWith actions $ opts { apiKeyHeader = Just "x-as-user", apiKey = Just (super_key <> (cs $ show user_id)) }
 
 
 
 rw'
   :: (Monoid w, MonadIO m)
   => ReaderT (ApiOptions SpecificApiOptions) IO (Either (ApiError ApplicationError) a)
-  -> ByteString
+  -> Int64
   -> RWST MigrateReader w s m (Either SomeException (Either (ApiError ApplicationError) a))
-rw' actions s = do
-  opts <- asks rApiOpts
-  liftIO $ try $ runWith actions $ opts { apiKey = Just s }
+rw' actions user_id = do
+  opts      <- asks rApiOpts
+  super_key <- asks rSuperKey
+  liftIO $ try $ runWith actions $ opts { apiKeyHeader = Just "x-as-user", apiKey = Just (super_key <> (cs $ show user_id)) }
 
 
 
