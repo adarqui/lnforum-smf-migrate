@@ -2,8 +2,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module LN.SMF.Migration.Thread (
-  createLegacyThreads,
-  deleteLegacyThreads
+  createSmfThreads,
+  deleteSmfThreads
 ) where
 
 
@@ -27,8 +27,8 @@ import           LN.T
 
 
 
-createLegacyThreads :: MigrateRWST ()
-createLegacyThreads = do
+createSmfThreads :: MigrateRWST ()
+createSmfThreads = do
 
   liftIO $ putStrLn "migrating threads.."
 
@@ -110,8 +110,8 @@ createLegacyThreads = do
 
 
 
-deleteLegacyThreads :: MigrateRWST ()
-deleteLegacyThreads = do
+deleteSmfThreads :: MigrateRWST ()
+deleteSmfThreads = do
 
   thread_ids <- lnIds "threadsName"
 

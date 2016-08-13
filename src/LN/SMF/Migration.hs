@@ -38,16 +38,16 @@ migrateSMF super_key org_sid redis_host mysql_host api_host limit = migrateRWST 
   where
   go = do
     createSuperUser
-    createLegacyOrganization
-    createLegacyForum
-    createLegacyBoards
+    createSmfOrganization
+    createSmfForum
+    createSmfBoards
     -- createUserProfiles
     -- createUserSettings
-    createLegacyUsers
-    createLegacyThreads
-    createLegacyThreadPosts
---    createLegacyThreadPostLikes
---    createLegacyPms
+    createSmfUsers
+    createSmfThreads
+    createSmfThreadPosts
+--    createSmfThreadPostLikes
+--    createSmfPms
 
 
 
@@ -62,15 +62,15 @@ unMigrateSMF super_key org_sid redis_host mysql_host api_host = migrateRWST supe
   go = do
     -- deleteUserProfiles
     -- deleteUserSettings
---    deleteLegacyPms
---    deleteLegacyThreadPostLikes
-    deleteLegacyThreadPosts
-    deleteLegacyThreads
-    deleteLegacyBoards
-    deleteLegacyForum
-    deleteLegacyOrganization
+--    deleteSmfPms
+--    deleteSmfThreadPostLikes
+    deleteSmfThreadPosts
+    deleteSmfThreads
+    deleteSmfBoards
+    deleteSmfForum
+    deleteSmfOrganization
     removeSuperUser
-    deleteLegacyUsers
+    deleteSmfUsers
 
 
 

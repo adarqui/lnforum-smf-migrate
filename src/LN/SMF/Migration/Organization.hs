@@ -2,8 +2,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module LN.SMF.Migration.Organization (
-  createLegacyOrganization,
-  deleteLegacyOrganization
+  createSmfOrganization,
+  deleteSmfOrganization
 ) where
 
 
@@ -17,8 +17,8 @@ import           LN.T
 
 
 
-createLegacyOrganization :: MigrateRWST ()
-createLegacyOrganization = do
+createSmfOrganization :: MigrateRWST ()
+createSmfOrganization = do
 
   liftIO $ putStrLn "migrating organizations.."
 
@@ -29,7 +29,7 @@ createLegacyOrganization = do
     [] -> do
 
       e_result <- rd $ postOrganization [UnixTimestamp $ read "1240177678"] $
-        OrganizationRequest "legacy" (Just "Legacy Forum") "ADARQ" "FL" "andrew.darqui@gmail.com" Membership_Join [] Nothing Public 0 Nothing
+        OrganizationRequest "legacy" (Just "Smf Forum") "ADARQ" "FL" "andrew.darqui@gmail.com" Membership_Join [] Nothing Public 0 Nothing
       case e_result of
         (Left err) -> liftIO $ print err
         (Right org_response) -> do
@@ -38,8 +38,8 @@ createLegacyOrganization = do
 
 
 
-deleteLegacyOrganization :: MigrateRWST ()
-deleteLegacyOrganization = do
+deleteSmfOrganization :: MigrateRWST ()
+deleteSmfOrganization = do
 
   ln_ids <- lnIds "organizationsName"
 

@@ -4,8 +4,8 @@
 module LN.SMF.Migration.User (
   createSuperUser,
   removeSuperUser,
-  createLegacyUsers,
-  deleteLegacyUsers
+  createSmfUsers,
+  deleteSmfUsers
 ) where
 
 
@@ -49,8 +49,8 @@ removeSuperUser = do
 -- create these users, associate their leuro ID with their SMF id.
 -- later, fix createdAt timestamps etc in leuro
 --
-createLegacyUsers :: MigrateRWST ()
-createLegacyUsers = do
+createSmfUsers :: MigrateRWST ()
+createSmfUsers = do
 
   liftIO $ putStrLn "migrating users.."
 
@@ -110,8 +110,8 @@ createLegacyUsers = do
 
 
 
-deleteLegacyUsers :: MigrateRWST ()
-deleteLegacyUsers = do
+deleteSmfUsers :: MigrateRWST ()
+deleteSmfUsers = do
 
   user_ids <- lnIds "usersName"
 

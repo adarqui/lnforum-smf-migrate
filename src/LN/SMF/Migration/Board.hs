@@ -2,8 +2,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module LN.SMF.Migration.Board (
-  createLegacyBoards,
-  deleteLegacyBoards
+  createSmfBoards,
+  deleteSmfBoards
 ) where
 
 
@@ -22,8 +22,8 @@ import           LN.T
 
 
 
-createLegacyBoards :: MigrateRWST ()
-createLegacyBoards = do
+createSmfBoards :: MigrateRWST ()
+createSmfBoards = do
 
   liftIO $ putStrLn "migrating boards.."
 
@@ -91,8 +91,8 @@ createLegacyBoards = do
 
 
 
-deleteLegacyBoards :: MigrateRWST ()
-deleteLegacyBoards = do
+deleteSmfBoards :: MigrateRWST ()
+deleteSmfBoards = do
 
   board_ids <- lnIds "boardsName"
 

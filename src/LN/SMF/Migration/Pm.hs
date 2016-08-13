@@ -2,8 +2,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module LN.SMF.Migration.Pm (
-  createLegacyPms,
-  deleteLegacyPms
+  createSmfPms,
+  deleteSmfPms
 ) where
 
 
@@ -24,8 +24,8 @@ import           LN.T
 
 
 
-createLegacyPms :: MigrateRWST ()
-createLegacyPms = do
+createSmfPms :: MigrateRWST ()
+createSmfPms = do
 
   liftIO $ putStrLn "migrating personal messages.."
 
@@ -88,8 +88,8 @@ createLegacyPms = do
 
 
 
-deleteLegacyPms :: MigrateRWST ()
-deleteLegacyPms = do
+deleteSmfPms :: MigrateRWST ()
+deleteSmfPms = do
 
   pm_ids <- lnIds "pmsName"
 

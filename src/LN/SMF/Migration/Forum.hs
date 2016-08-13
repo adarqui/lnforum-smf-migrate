@@ -2,8 +2,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module LN.SMF.Migration.Forum (
-  createLegacyForum,
-  deleteLegacyForum
+  createSmfForum,
+  deleteSmfForum
 ) where
 
 
@@ -17,8 +17,8 @@ import           LN.T
 
 
 
-createLegacyForum :: MigrateRWST ()
-createLegacyForum = do
+createSmfForum :: MigrateRWST ()
+createSmfForum = do
 
   liftIO $ putStrLn "migrating forums.."
 
@@ -33,7 +33,7 @@ createLegacyForum = do
       case forum_ids of
         [] -> do
            e_result <- rd (postForum_ByOrganizationId [UnixTimestamp $ read "1240177678"] org_id $
-             ForumRequest "adarq-legacy" (Just "Legacy adarq.org forum") 20 20 10 10 10 Nothing [] Public 0 Nothing)
+             ForumRequest "adarq-legacy" (Just "Smf adarq.org forum") 20 20 10 10 10 Nothing [] Public 0 Nothing)
            case e_result of
              (Left _) -> return ()
              (Right forum_response) -> do
@@ -45,8 +45,8 @@ createLegacyForum = do
 
 
 
-deleteLegacyForum :: MigrateRWST ()
-deleteLegacyForum = do
+deleteSmfForum :: MigrateRWST ()
+deleteSmfForum = do
 
   forum_ids <- lnIds "forumsName"
 

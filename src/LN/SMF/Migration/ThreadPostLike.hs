@@ -2,8 +2,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module LN.SMF.Migration.ThreadPostLike (
-  createLegacyThreadPostLikes,
-  deleteLegacyThreadPostLikes
+  createSmfThreadPostLikes,
+  deleteSmfThreadPostLikes
 ) where
 
 
@@ -22,8 +22,8 @@ import           LN.T
 
 
 
-createLegacyThreadPostLikes :: MigrateRWST ()
-createLegacyThreadPostLikes = do
+createSmfThreadPostLikes :: MigrateRWST ()
+createSmfThreadPostLikes = do
 
   liftIO $ putStrLn "migrating thread post likes"
 
@@ -75,8 +75,8 @@ createLegacyThreadPostLikes = do
 
 
 
-deleteLegacyThreadPostLikes :: MigrateRWST ()
-deleteLegacyThreadPostLikes = do
+deleteSmfThreadPostLikes :: MigrateRWST ()
+deleteSmfThreadPostLikes = do
 
   thread_post_likes_ids <- lnIds "threadPostLikesName"
 
