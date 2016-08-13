@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module LN.SMF.Migration.Board (
@@ -36,7 +37,7 @@ createSmfBoards = do
   forum_ids <- lnIds "forumsName"
 
   case forum_ids of
-    [] -> liftIO $ putStrLn "Forum does not exist."
+    []           -> error "Forum does not exist."
     (forum_id:_) -> do
 
       forM_
@@ -47,9 +48,9 @@ createSmfBoards = do
 
           e_result <- rd (postBoard_ByForumId [UnixTimestamp $ read "1240177678"] forum_id $ BoardRequest name Nothing False True True [] Nothing [] 0 Nothing Nothing)
           case e_result of
-            (Left err)             -> liftIO $ print err
-            (Right board_response) -> do
-              createRedisMap "boardsName" id_cat (boardResponseId board_response)
+            Left err                -> error $ show err
+            Right BoardResponse{..} -> do
+              createRedisMap "boardsName" id_cat boardResponseId
         )
 
 

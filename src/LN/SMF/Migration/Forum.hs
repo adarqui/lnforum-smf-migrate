@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module LN.SMF.Migration.Forum (
@@ -25,7 +26,7 @@ createSmfForum = do
   org_ids <- lnIds "organizationsName"
 
   case org_ids of
-    []         -> liftIO $ putStrLn "unable to create forum"
+    []         -> error "Unable to create forum"
     (org_id:_) -> do
 
       forum_ids <- lnIds "forumsName"
@@ -35,9 +36,9 @@ createSmfForum = do
            e_result <- rd (postForum_ByOrganizationId [UnixTimestamp $ read "1240177678"] org_id $
              ForumRequest "migrate" (Just "SMF migrated forum") 20 20 10 10 10 Nothing [] Public 0 Nothing)
            case e_result of
-             (Left _) -> return ()
-             (Right forum_response) -> do
-                createRedisMap "forumsName" 0 (forumResponseId forum_response)
+             Left err                -> error $ show err
+             Right ForumResponse{..} -> do
+                createRedisMap "forumsName" 0 forumResponseId
                 return ()
 
         _  -> return ()
