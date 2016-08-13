@@ -37,7 +37,6 @@ migrateSMF :: Text -> Text -> Text -> Text -> Text ->  Int -> IO ()
 migrateSMF super_key org_sid redis_host mysql_host api_host limit = migrateRWST super_key org_sid redis_host mysql_host api_host limit go
   where
   go = do
-    createSuperUser
     createSmfOrganization
     createSmfForum
     createSmfBoards
@@ -69,7 +68,6 @@ unMigrateSMF super_key org_sid redis_host mysql_host api_host = migrateRWST supe
     deleteSmfBoards
     deleteSmfForum
     deleteSmfOrganization
-    removeSuperUser
     deleteSmfUsers
 
 

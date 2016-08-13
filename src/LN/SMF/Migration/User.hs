@@ -3,8 +3,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module LN.SMF.Migration.User (
-  createSuperUser,
-  removeSuperUser,
   createSmfUsers,
   deleteSmfUsers
 ) where
@@ -29,22 +27,6 @@ import           LN.SMF.Migration.Control
 import           LN.SMF.Migration.Sanitize
 import           LN.T
 import           Prelude                        hiding (break)
-
-
-
--- | this is just for 'adarqui' which is user ID 1 on leuro AND on SMF
---
-createSuperUser :: MigrateRWST ()
-createSuperUser = do
-  createRedisMap "usersName" 1 1
-
-
-
--- | this doesn't actually remove a user, just the redis key
---
-removeSuperUser :: MigrateRWST ()
-removeSuperUser = do
-  deleteRedisMapByLnId "usersName" 1
 
 
 
