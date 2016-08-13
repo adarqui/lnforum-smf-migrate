@@ -10,7 +10,7 @@ module LN.SMF.Migration.User (
 
 
 
-import           Control.Break                  (loop, break, lift)
+import           Control.Break                  (break, lift, loop)
 import           Control.Monad                  (forM_, void, when)
 import           Control.Monad.IO.Class         (liftIO)
 import           Control.Monad.Trans.RWS
@@ -19,7 +19,9 @@ import           Data.Monoid                    ((<>))
 import           Data.Text                      (Text)
 import qualified Data.Text                      as T
 import           Database.MySQL.Simple
+
 import           LN.Api
+import           LN.Sanitize.Internal
 import           LN.SMF.Migration.Connect.Redis
 import           LN.SMF.Migration.Control
 import           LN.SMF.Migration.Sanitize
@@ -89,7 +91,7 @@ createSmfUsers = do
 
             when (unique_id == 10) (break ())
 
-            let member_name' = if unique_id == 1 then member_name else (member_name <> (T.pack $ show unique_id))
+            let member_name' = sanitizeLine $ if unique_id == 1 then member_name else (member_name <> (T.pack $ show unique_id))
 
             liftIO $ putStrLn $ show [show id_member, T.unpack member_name, T.unpack real_name, T.unpack email_address, show date_registered]
 
@@ -97,8 +99,8 @@ createSmfUsers = do
               UserRequest member_name' real_name email_address "smf" (T.pack $ show id_member) Nothing)
 
             case e_result of
-              (Left err)                    -> liftIO $ putStrLn $ show err
-              (Right (Left err))            -> liftIO $ putStrLn $ show err
+              (Left err)                    -> error $ show err
+              (Right (Left err))            -> error $ show err
               (Right (Right user_response)) -> do
                 lift $ createRedisMap "usersName" id_member (userResponseId user_response)
                 break ()
