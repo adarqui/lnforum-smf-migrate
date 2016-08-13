@@ -21,6 +21,7 @@ import qualified Data.Text                      as T
 import           Database.MySQL.Simple
 
 import           LN.Api
+import qualified LN.Api.String                  as ApiS
 import           LN.Sanitize.Internal
 import           LN.SMF.Migration.Connect.Redis
 import           LN.SMF.Migration.Control
@@ -91,19 +92,31 @@ createSmfUsers = do
 
             when (unique_id == 10) (break ())
 
-            let member_name' = sanitizeLine $ if unique_id == 1 then member_name else (member_name <> (T.pack $ show unique_id))
+            let
+              member_name' = sanitizeLine $ if unique_id == 1 then member_name else (member_name <> (T.pack $ show unique_id))
+              safe_name'   = toSafeName member_name'
 
             liftIO $ putStrLn $ show [show id_member, T.unpack member_name, T.unpack real_name, T.unpack email_address, show date_registered]
 
-            e_result <- lift $ rd' (postUser [UnixTimestamp $ fromIntegral date_registered] $
-              UserRequest member_name' real_name email_address "smf" (T.pack $ show id_member) Nothing)
-
+            -- see if this user has already been added,
+            -- if so ...
+            -- if not ...
+            --
+            e_result <- lift $ rd' (ApiS.getUserSanitizedPack' safe_name')
             case e_result of
-              (Left err)                    -> error $ show err
-              (Right (Left err))            -> error $ show err
-              (Right (Right user_response)) -> do
-                lift $ createRedisMap "usersName" id_member (userResponseId user_response)
-                break ()
+              Left err -> error $ show err
+              Right (Right _) -> pure ()
+              Right (Left _)  -> do
+
+                e_result <- lift $ rd' (postUser [UnixTimestamp $ fromIntegral date_registered] $
+                  UserRequest member_name' real_name email_address "smf" (T.pack $ show id_member) Nothing)
+
+                case e_result of
+                  (Left err)                    -> error $ show err
+                  (Right (Left err))            -> error $ show err
+                  (Right (Right user_response)) -> do
+                    lift $ createRedisMap "usersName" id_member (userResponseId user_response)
+                    break ()
 
     ) -- forM_
 
