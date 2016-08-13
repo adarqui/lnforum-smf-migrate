@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module LN.SMF.Migration.User (
@@ -68,7 +69,7 @@ createSmfUsers = do
   --
   forM_
     (filter (\(id_member, _, _, _, _) -> not $ id_member `elem` smf_ids) xs)
-    (\(id_member :: Int64,
+    $ \(id_member :: Int64,
        member_name :: Text,
        real_name :: Text,
        email_address :: Text,
@@ -83,31 +84,38 @@ createSmfUsers = do
 
         Nothing -> do
 
-          put $ MigrateState 0
-
-          loop $ do
-
-            lift $ modify (\(MigrateState n) -> MigrateState (n+1))
-            unique_id <- lift $ gets runMigrateState
-
-            when (unique_id == 10) (break ())
-
-            let
-              member_name' = sanitizeLine $ if unique_id == 1 then member_name else (member_name <> (T.pack $ show unique_id))
-              safe_name'   = toSafeName member_name'
-
-            liftIO $ putStrLn $ show [show id_member, T.unpack member_name, T.unpack real_name, T.unpack email_address, show date_registered]
-
-            -- see if this user has already been added,
-            -- if so ...
-            -- if not ...
+          -- does this user already exist? lookup by email.
+          --
+          lr <- rd' (getUserPacks_ByEmail' email_address)
+          case lr of
+            Left err -> error $ show err
+            Right (Right (UserPackResponses (UserPackResponse{..}:_))) -> do
+              -- Since this user already exists, imply create a mapping for future use
+              --
+              createRedisMap "userName" id_member userPackResponseUserId
+            -- We need to try and add the user, loop through several times in an attempt to add them
             --
-            e_result <- lift $ rd' (ApiS.getUserSanitizedPack' safe_name')
-            case e_result of
-              Left err -> error $ show err
-              Right (Right _) -> pure ()
-              Right (Left _)  -> do
+            _ -> do
 
+              put $ MigrateState 0
+
+              loop $ do
+
+                lift $ modify (\(MigrateState n) -> MigrateState (n+1))
+                unique_id <- lift $ gets runMigrateState
+
+                when (unique_id == 10) (break ())
+
+                let
+                  member_name' = sanitizeLine $ if unique_id == 1 then member_name else (member_name <> (T.pack $ show unique_id))
+                  safe_name'   = toSafeName member_name'
+
+                liftIO $ putStrLn $ show [show id_member, T.unpack member_name, T.unpack real_name, T.unpack email_address, show date_registered]
+
+                -- see if this user has already been added,
+                -- if so ...
+                -- if not ...
+                --
                 e_result <- lift $ rd' (postUser [UnixTimestamp $ fromIntegral date_registered] $
                   UserRequest member_name' real_name email_address "smf" (T.pack $ show id_member) Nothing)
 
@@ -117,8 +125,6 @@ createSmfUsers = do
                   (Right (Right user_response)) -> do
                     lift $ createRedisMap "usersName" id_member (userResponseId user_response)
                     break ()
-
-    ) -- forM_
 
   return ()
 
