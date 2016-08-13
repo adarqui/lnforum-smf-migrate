@@ -33,7 +33,7 @@ createSmfForum = do
       case forum_ids of
         [] -> do
            e_result <- rd (postForum_ByOrganizationId [UnixTimestamp $ read "1240177678"] org_id $
-             ForumRequest "adarq-legacy" (Just "Smf adarq.org forum") 20 20 10 10 10 Nothing [] Public 0 Nothing)
+             ForumRequest "migrate" (Just "SMF migrated forum") 20 20 10 10 10 Nothing [] Public 0 Nothing)
            case e_result of
              (Left _) -> return ()
              (Right forum_response) -> do
