@@ -76,11 +76,11 @@ createSmfUsers = do
           case lr of
             Left err -> error $ show err
             Right (Right (UserPackResponses (UserPackResponse{..}:_))) -> do
-              -- Since this user already exists, imply create a mapping for future use
+              -- Since this user already exists, simply create a mapping for future use
               --
-              lr' <- rw userPackResponseUserId $ postTeamMember_ByOrganizationId' org_id $ TeamMemberRequest 0
+              lr' <- rw userPackResponseUserId $ postTeamMember_ByOrganizationId [UnixTimestamp $ fromIntegral date_registered] org_id (TeamMemberRequest 0)
               case lr' of
-                Left err -> error $ show err
+                Left err -> pure ()
                 Right _  -> do
                   createRedisMap "usersName" id_member userPackResponseUserId
             -- We need to try and add the user, loop through several times in an attempt to add them
