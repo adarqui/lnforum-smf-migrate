@@ -45,7 +45,6 @@ createSmfForum = do
 
 
 
-
 deleteSmfForum :: MigrateRWST ()
 deleteSmfForum = do
 

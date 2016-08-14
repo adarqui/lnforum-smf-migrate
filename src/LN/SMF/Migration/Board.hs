@@ -14,6 +14,7 @@ import           Control.Monad.IO.Class         (liftIO)
 import           Control.Monad.Trans.RWS
 import           Data.Int
 import           Data.Text                      (Text)
+import qualified Data.Text                      as Text
 import           Database.MySQL.Simple
 import           LN.Api
 import           LN.SMF.Migration.Connect.Redis
@@ -69,6 +70,10 @@ createSmfBoards = do
                board_desc :: Text
               ) -> do
 
+              let desc = if board_desc == ""
+                            then Nothing
+                            else Just $ sanitizeHtml $ Text.take 132 board_desc
+
               liftIO $ print (id_board, id_parent, id_parent, board_name, board_desc)
 
               mresult <- findLnIdFromSmfId "boardsName" (if id_parent == 0 then id_cat else id_parent)
@@ -78,11 +83,11 @@ createSmfBoards = do
                 (Just parent) -> do
 
                   e_result <- rd (postBoard_ByBoardId [UnixTimestamp $ read "1240177678"] parent $
-                    BoardRequest (sanitizeHtml board_name) (Just $ sanitizeHtml board_desc) False True True [] Nothing [] 0 Nothing Nothing)
+                    BoardRequest (sanitizeHtml board_name) desc False True True [] Nothing [] 0 Nothing Nothing)
 
                   case e_result of
-                    (Left err) -> liftIO $ print err
-                    (Right child_board_response) -> do
+                    Left err -> error $ show err
+                    Right child_board_response -> do
                       createRedisMap "boardsName" id_board (boardResponseId child_board_response)
 
             )
@@ -102,8 +107,6 @@ deleteSmfBoards = do
 
       liftIO $ putStrLn $ show board_id
 
---      void $ liftIO (try (rd (deleteBoard' board_id)) :: IO (Either SomeException (Either ApiError ())))
---      void $ (try (rd' (deleteBoard' board_id)) :: MigrateRWST (Either SomeException (Either ApiError ())))
       void $ rd' (deleteBoard' board_id)
 
       deleteRedisMapByLnId "boardsName" board_id
