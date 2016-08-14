@@ -95,7 +95,7 @@ createSmfThreads = do
 
                 case e_result of
                   Left err                      -> error $ show err
-                  Right (Left err)              -> error $ show err
+                  Right (Left err)              -> liftIO $ putStrLn "continuing.."
                   Right (Right thread_response) -> do
                     lift $ createRedisMap "threadsName" id_topic (threadResponseId thread_response)
                     break ()
