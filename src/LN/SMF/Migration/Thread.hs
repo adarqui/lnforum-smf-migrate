@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module LN.SMF.Migration.Thread (
   createSmfThreads,
@@ -48,8 +49,6 @@ createSmfThreads = do
 
     thread_ids <- smfIds "threadsName"
 
-  --  forum_ids <- head <$> lnIds "forums"
-
     forM_
       (filter (\(id_topic, _, _, _, _, _, _, _) -> not $ id_topic `elem` thread_ids) threads)
       $ \(
@@ -71,12 +70,12 @@ createSmfThreads = do
 
           liftIO $ print (mboard, mtopic, muser)
 
-          put $ MigrateState 0
+          resetStCounter
 
           loop $ do
 
-            lift $ modify (\(MigrateState n) -> MigrateState (n+1))
-            unique_id <- lift $ gets runMigrateState
+            lift $ modify (\st@MigrateState{..} -> st{ stCounter = stCounter + 1})
+            unique_id <- lift $ gets stCounter
 
             when (unique_id == 10) (break ())
 
@@ -91,8 +90,8 @@ createSmfThreads = do
               ((Just board), Nothing, (Just user)) -> do
                 -- doesn't exist, created it
                 --
-                e_result <- lift $ rw' (postThread_ByBoardId [UnixTimestamp $ fromIntegral poster_time] board $
-                  ThreadRequest (sanitizeHtml subject') Nothing is_sticky locked Nothing Nothing [] 0 Nothing) user
+                e_result <- lift $ rw' user $ postThread_ByBoardId [UnixTimestamp $ fromIntegral poster_time] board $
+                  ThreadRequest (sanitizeHtml subject') Nothing is_sticky locked Nothing Nothing [] 0 Nothing
 
                 case e_result of
                   Left err                      -> error $ show err
@@ -118,11 +117,11 @@ deleteSmfThreads = do
 
     get_result <- rd' $ getThread' thread_id
     case get_result of
-      Left err                      -> error $ show err
-      Right (Left err)              -> error $ show err
-      Right (Right thread_response) -> do
+      Left err                         -> error $ show err
+      Right (Left err)                 -> error $ show err
+      Right (Right ThreadResponse{..}) -> do
 
-        del_result <- rw' (deleteThread' thread_id) (threadResponseUserId thread_response)
+        del_result <- rw' threadResponseUserId (deleteThread' thread_id)
         case del_result of
           Left err -> error $ show err
           Right _  -> do

@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module LN.SMF.Migration.ThreadPostLike (
@@ -43,7 +44,7 @@ createSmfThreadPostLikes = do
 
       forM_
         (filter (\(id_gpbp, _, _, _) -> not $ id_gpbp `elem` thread_post_likes_ids) thread_post_likes)
-        (\(id_gpbp :: Int64,
+        $ \(id_gpbp :: Int64,
            id_msg :: Int64,
            id_member :: Int64,
            score :: Int64
@@ -61,15 +62,14 @@ createSmfThreadPostLikes = do
 
                 let like_score = if score == 1 then Like else Dislike
 
-                e_result <- rw (postLike_ByThreadPostId' post $ LikeRequest like_score Nothing 0) user
+                e_result <- rw user (postLike_ByThreadPostId' post $ LikeRequest like_score Nothing 0)
 
                 case e_result of
-                  (Left err) -> liftIO $ print err
-                  (Right thread_post_like_response) -> do
-                    createRedisMap "threadPostLikesName" id_gpbp (likeResponseId thread_post_like_response)
+                  Left err               -> error $ show err
+                  Right LikeResponse{..} -> do
+                    createRedisMap "threadPostLikesName" id_gpbp likeResponseId
 
-              (_, _) -> return ()
-        )
+              _ -> return ()
 
   return ()
 
@@ -80,18 +80,16 @@ deleteSmfThreadPostLikes = do
 
   thread_post_likes_ids <- lnIds "threadPostLikesName"
 
-  forM_ thread_post_likes_ids
-    (\thread_post_like_id -> do
+  forM_ thread_post_likes_ids $ \thread_post_like_id -> do
 
       liftIO $ putStrLn $ show thread_post_like_id
 
       e_result <- rd $ getLike' thread_post_like_id
       case e_result of
-        Left err -> liftIO $ print err
-        Right like_response -> do
+        Left err               -> error $ show err
+        Right LikeResponse{..} -> do
 
-          void $ rw (deleteLike' thread_post_like_id) (likeResponseUserId like_response)
+          void $ rw likeResponseUserId (deleteLike' thread_post_like_id)
           deleteRedisMapByLnId "threadPostLikesName" thread_post_like_id
-    )
 
   return ()

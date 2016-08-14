@@ -76,5 +76,5 @@ migrateRWST super_key org_sid redis_host mysql_host api_host limit go = do
   mysql <- connectMySQL mysql_host
   redis <- connectRedis redis_host
   let api_opts = apiOpts { apiUrl = api_host, apiKey = Just $ cs super_key }
-  void $ evalRWST go (MigrateReader (cs super_key) org_sid redis_host redis mysql_host mysql api_host api_opts limit) (MigrateState 0)
+  void $ evalRWST go (MigrateReader (cs super_key) org_sid redis_host redis mysql_host mysql api_host api_opts limit) (MigrateState 0 0)
   return ()

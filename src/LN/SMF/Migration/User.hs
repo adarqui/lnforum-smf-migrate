@@ -40,8 +40,9 @@ createSmfUsers = do
 
   liftIO $ putStrLn "migrating users.."
 
-  mysql <- asks rMySQL
-  limit <- asks rLimit
+  mysql  <- asks rMySQL
+  limit  <- asks rLimit
+  org_id <- gets stOrgId
 
   xs <- liftIO $ query mysql "select id_member, member_name, real_name, email_address, date_registered from smf_members LIMIT ?" (Only limit)
 
@@ -77,17 +78,21 @@ createSmfUsers = do
             Right (Right (UserPackResponses (UserPackResponse{..}:_))) -> do
               -- Since this user already exists, imply create a mapping for future use
               --
-              createRedisMap "userName" id_member userPackResponseUserId
+              lr' <- rw userPackResponseUserId $ postTeamMember_ByOrganizationId' org_id $ TeamMemberRequest 0
+              case lr' of
+                Left err -> error $ show err
+                Right _  -> do
+                  createRedisMap "usersName" id_member userPackResponseUserId
             -- We need to try and add the user, loop through several times in an attempt to add them
             --
             _ -> do
 
-              put $ MigrateState 0
+              resetStCounter
 
               loop $ do
 
-                lift $ modify (\(MigrateState n) -> MigrateState (n+1))
-                unique_id <- lift $ gets runMigrateState
+                lift $ incStCounter
+                unique_id <- lift $ gets stCounter
 
                 when (unique_id == 10) (break ())
 
@@ -113,8 +118,12 @@ createSmfUsers = do
                     liftIO $ putStrLn $ show err
                     liftIO $ putStrLn "continuing.."
                   Right (Right user_response) -> do
-                    lift $ createRedisMap "usersName" id_member (userResponseId user_response)
-                    break ()
+                    lr <- lift $ rw (userResponseId user_response) $ postTeamMember_ByOrganizationId' org_id $ TeamMemberRequest 0
+                    case lr of
+                      Left err -> error $ show err
+                      Right _  -> do
+                        lift $ createRedisMap "usersName" id_member (userResponseId user_response)
+                        break ()
 
   return ()
 

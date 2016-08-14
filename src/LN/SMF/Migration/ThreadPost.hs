@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module LN.SMF.Migration.ThreadPost (
@@ -38,7 +39,7 @@ createSmfThreadPosts = do
     max_limit = min limit thread_posts_count
 
 
-  forM_ [0..(max_limit `div` 50)] (\off -> do
+  forM_ [0..(max_limit `div` 50)] $ \off -> do
 
     thread_posts <- liftIO $ query mysql "select id_msg, id_topic, poster_time, id_member, subject, body, poster_ip from smf_messages LIMIT ? OFFSET ?" (50 :: Int, (50 * off) :: Int)
 
@@ -52,7 +53,7 @@ createSmfThreadPosts = do
 
         forM_
           (filter (\(id_msg, _, _, _, _, _, _) -> not $ id_msg `elem` thread_post_ids) thread_posts)
-          (\(id_msg :: Int64,
+          $ \(id_msg :: Int64,
              id_topic :: Int64,
              poster_time :: Int64,
              id_member :: Int64,
@@ -68,20 +69,17 @@ createSmfThreadPosts = do
 
               case (mtopic, muser) of
                 (Just topic, Just user) -> do
-                  e_result <- rw (postThreadPost_ByThreadId [UnixTimestamp poster_time] topic $
-                    ThreadPostRequest (Just subject) (PostDataBBCode body) [] [] 0 Nothing Nothing) user
+                  e_result <- rw user $ postThreadPost_ByThreadId [UnixTimestamp poster_time] topic $
+                    ThreadPostRequest (Just subject) (PostDataBBCode body) [] [] 0 Nothing Nothing
 
                   case e_result of
-                    (Left err) -> liftIO $ print err
-                    (Right thread_post_response) -> do
+                    Left err                   -> error $ show err
+                    Right thread_post_response -> do
                       createRedisMap "threadPostsName" id_msg (threadPostResponseId thread_post_response)
 
-                (_, _) -> do
+                _ -> do
                   liftIO $ print $ "thread_posts: not found: mtopic=" ++ show mtopic ++ ", muser=" ++ show muser
                   return ()
---              return ()
-          )
-        )
 
   return ()
 
@@ -92,18 +90,16 @@ deleteSmfThreadPosts = do
 
   thread_post_ids <- lnIds "threadPostsName"
 
-  forM_ thread_post_ids
-    (\thread_post_id -> do
+  forM_ thread_post_ids $ \thread_post_id -> do
 
       liftIO $ putStrLn $ show thread_post_id
 
       e_result <- rd $ getThreadPost' thread_post_id
       case e_result of
-        Left err -> liftIO $ print err
-        Right thread_post_response -> do
+        Left err                     -> error $ show err
+        Right ThreadPostResponse{..} -> do
 
-          void $ rw (deleteThreadPost' thread_post_id) (threadPostResponseUserId thread_post_response)
+          void $ rw threadPostResponseUserId (deleteThreadPost' thread_post_id)
           deleteRedisMapByLnId "threadPostsName" thread_post_id
-    )
 
   return ()

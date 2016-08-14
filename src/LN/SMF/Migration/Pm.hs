@@ -40,7 +40,7 @@ createSmfPms = do
 
   forM_
     (filter (\(id_pm, _, _, _, _, _, _, _, _, _, _) -> not $ id_pm `elem` pm_ids) pms)
-    (\(
+    $ \(
         id_pm :: Int64,
         id_member_from :: Int64,
         deleted_by_sender :: Bool,
@@ -70,8 +70,8 @@ createSmfPms = do
           ((Just user_from), (Just user_to)) -> do
             -- doesn't exist, created it
             --
-            eresult <- rw (postPm_ByUserId [UnixTimestamp $ fromIntegral msgtime] user_to $
-              PmRequest (sanitizeHtml subject) (sanitizeHtml body) 0) user_from
+            eresult <- rw user_from (postPm_ByUserId [UnixTimestamp $ fromIntegral msgtime] user_to $
+              PmRequest (sanitizeHtml subject) (sanitizeHtml body) 0)
 
             case eresult of
               (Left err) -> liftIO $ print err
@@ -80,9 +80,7 @@ createSmfPms = do
                 createRedisMap ("pmsName" <> "_users") (pmResponseId pm_response) (pmResponseUserId pm_response)
 
 
-          (_, _) -> return ()
-
-    )
+          _ -> return ()
 
   return ()
 
@@ -93,8 +91,7 @@ deleteSmfPms = do
 
   pm_ids <- lnIds "pmsName"
 
-  forM_ pm_ids
-    (\pm_id -> do
+  forM_ pm_ids $ \pm_id -> do
 
       liftIO $ putStrLn $ show pm_id
 
@@ -103,12 +100,11 @@ deleteSmfPms = do
         Nothing -> return ()
         Just pm_user_id -> do
 
-          del_result <- rw (deletePm' pm_id) pm_user_id
+          del_result <- rw pm_user_id (deletePm' pm_id)
           case del_result of
-            Left err -> liftIO $ putStrLn $ show err
+            Left err -> error $ show err
             Right _ -> do
               deleteRedisMapByLnId "pmsName" pm_id
               deleteRedisMapByLnId ("pmsName" <> "_users") pm_id
-      )
 
   return ()
