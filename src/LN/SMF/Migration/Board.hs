@@ -43,7 +43,7 @@ createSmfBoards = do
 
       forM_
         (filter (\(id_cat, _) -> not $ id_cat `elem` board_ids) categories)
-        (\(id_cat :: Int64, name :: Text) -> do
+        $ \(id_cat :: Int64, name :: Text) -> do
 
           liftIO $ print $ (id_cat, name)
 
@@ -52,18 +52,17 @@ createSmfBoards = do
             Left err                -> error $ show err
             Right BoardResponse{..} -> do
               createRedisMap "boardsName" id_cat boardResponseId
-        )
 
 
       forM_
         categories
-        (\(cat_id :: Int64, _) -> do
+        $ \(cat_id :: Int64, _) -> do
 
           boards <- liftIO $ query mysql "select id_board, id_parent, id_cat, name, description from smf_boards where id_cat = ?" (Only cat_id)
 
           forM_
             (filter (\(id_board, _, _, _, _) -> not $ id_board `elem` board_ids) boards)
-            (\(id_board   :: Int64,
+            $ \(id_board   :: Int64,
                id_parent  :: Int64,
                id_cat     :: Int64,
                board_name :: Text,
@@ -90,9 +89,6 @@ createSmfBoards = do
                     Right child_board_response -> do
                       createRedisMap "boardsName" id_board (boardResponseId child_board_response)
 
-            )
-        )
-
   return ()
 
 
@@ -102,14 +98,9 @@ deleteSmfBoards = do
 
   board_ids <- lnIds "boardsName"
 
-  forM_ board_ids
-    (\board_id -> do
-
-      liftIO $ putStrLn $ show board_id
-
-      void $ rd' (deleteBoard' board_id)
-
-      deleteRedisMapByLnId "boardsName" board_id
-    )
+  forM_ board_ids $ \board_id -> do
+    liftIO $ putStrLn $ show board_id
+    void $ rd' (deleteBoard' board_id)
+    deleteRedisMapByLnId "boardsName" board_id
 
   return ()

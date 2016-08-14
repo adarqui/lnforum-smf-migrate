@@ -42,7 +42,7 @@ createSmfThreads = do
     max_limit = min limit threads_count
 
 
-  forM_ [0..(max_limit `div` 50)] (\off -> do
+  forM_ [0..(max_limit `div` 50)] $ \off -> do
 
     threads <- liftIO $ query mysql "select smf_topics.id_topic, smf_topics.is_sticky, smf_topics.id_board, smf_topics.id_member_started, smf_topics.locked, smf_messages.subject, smf_messages.poster_time, smf_messages.poster_ip from smf_topics INNER JOIN smf_messages ON smf_topics.id_first_msg=smf_messages.id_msg where smf_topics.id_board != 79 LIMIT ? OFFSET ?" (50 :: Int, (50 * off) :: Int)
 
@@ -52,7 +52,7 @@ createSmfThreads = do
 
     forM_
       (filter (\(id_topic, _, _, _, _, _, _, _) -> not $ id_topic `elem` thread_ids) threads)
-      (\(
+      $ \(
           id_topic :: Int64,
           is_sticky :: Bool,
           id_board :: Int64,
@@ -95,16 +95,13 @@ createSmfThreads = do
                   ThreadRequest (sanitizeHtml subject') Nothing is_sticky locked Nothing Nothing [] 0 Nothing) user
 
                 case e_result of
-                  (Left err)                      -> liftIO $ print err
-                  (Right (Left err))              -> liftIO $ print err
-                  (Right (Right thread_response)) -> do
+                  Left err                      -> error $ show err
+                  Right (Left err)              -> error $ show err
+                  Right (Right thread_response) -> do
                     lift $ createRedisMap "threadsName" id_topic (threadResponseId thread_response)
                     break ()
 
-              (_, _, _) -> break ()
-
-      )
-   )
+              _ -> break ()
 
   return ()
 
@@ -115,23 +112,20 @@ deleteSmfThreads = do
 
   thread_ids <- lnIds "threadsName"
 
-  forM_ thread_ids
-    (\thread_id -> do
+  forM_ thread_ids $ \thread_id -> do
 
-      liftIO $ putStrLn $ show thread_id
+    liftIO $ putStrLn $ show thread_id
 
-      get_result <- rd' $ getThread' thread_id
-      case get_result of
-        Left err -> liftIO $ print err
-        Right (Left err) ->  liftIO $ print err
-        Right (Right thread_response) -> do
+    get_result <- rd' $ getThread' thread_id
+    case get_result of
+      Left err                      -> error $ show err
+      Right (Left err)              -> error $ show err
+      Right (Right thread_response) -> do
 
-          del_result <- rw' (deleteThread' thread_id) (threadResponseUserId thread_response)
-          case del_result of
-            Left err -> liftIO $ print err
-            Right _ -> do
-              deleteRedisMapByLnId "threadsName" thread_id
-
-      )
+        del_result <- rw' (deleteThread' thread_id) (threadResponseUserId thread_response)
+        case del_result of
+          Left err -> error $ show err
+          Right _  -> do
+            deleteRedisMapByLnId "threadsName" thread_id
 
   return ()

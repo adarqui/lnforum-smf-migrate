@@ -32,8 +32,8 @@ createSmfOrganization = do
       e_result <- rd $ postOrganization [UnixTimestamp $ read "1240177678"] $
         OrganizationRequest org_sid (Just "Smf Forum") "Company" "Location" "andrew.darqui@gmail.com" Membership_Join [] Nothing Public 0 Nothing
       case e_result of
-        (Left err) -> liftIO $ print err
-        (Right org_response) -> do
+        Left err           -> error $ show err
+        Right org_response -> do
           createRedisMap "organizationsName" 0 (organizationResponseId org_response)
           return ()
 
