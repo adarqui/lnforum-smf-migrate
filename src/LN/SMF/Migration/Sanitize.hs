@@ -17,8 +17,9 @@ import           Data.Char
 import           Data.Maybe
 import           Data.Text              (Text)
 import qualified Data.Text              as Text
--- import           Data.Text.ICU.Replace
--- import           Text.HTML.TagSoup.Fast
+import qualified Data.Text.Lazy         as Lazy
+import qualified Data.Text.Lazy.Builder as Lazy
+import           HTMLEntities.Decoder
 
 
 
@@ -57,4 +58,4 @@ titleify s =
 
 
 sanitizeHtml :: Text -> Text
-sanitizeHtml = Text.replace "<br />" "\n" -- . unescapeHtmlT
+sanitizeHtml = Text.replace "<br />" "\n" . Lazy.toStrict . Lazy.toLazyText . htmlEncodedText
