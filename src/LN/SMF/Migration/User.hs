@@ -16,7 +16,7 @@ import           Control.Monad.Trans.RWS
 import           Data.Int
 import           Data.Monoid                    ((<>))
 import           Data.Text                      (Text)
-import qualified Data.Text                      as T
+import qualified Data.Text                      as Text
 import           Database.MySQL.Simple
 
 import           LN.Api
@@ -58,11 +58,14 @@ createSmfUsers = do
        date_registered :: Int
       ) -> do
 
+      let
+        real_name' = Text.filter (\c -> all (/= c) ("#$" :: String)) real_name
+
       mresult <- findLnIdFromSmfId "usersName" id_member
 
       case mresult of
 
-        (Just _) -> liftIO $ putStrLn $ (T.unpack member_name) <> " already exists. skipping"
+        Just _  -> liftIO $ putStrLn $ (Text.unpack member_name) <> " already exists. skipping"
 
         Nothing -> do
 
@@ -88,21 +91,28 @@ createSmfUsers = do
 
                 when (unique_id == 10) (break ())
 
+                -- Hacky stuff
+                -- Just getting all cases to pass:
+                -- Redhawk#23
+                -- $ick3nin.v3nd3tta
+                --
                 let
-                  member_name' = sanitizeLine $ if unique_id == 1 then member_name else (member_name <> (T.pack $ show unique_id))
+                  member_name' = Text.filter (\c -> all (/= c) ("#$" :: String)) $ sanitizeLine $ if unique_id == 1 then member_name else (member_name <> (Text.pack $ show unique_id))
                   safe_name'   = toSafeName member_name'
 
-                liftIO $ putStrLn $ show [show id_member, T.unpack member_name, T.unpack real_name, T.unpack email_address, show date_registered]
+                liftIO $ putStrLn $ show [show id_member, Text.unpack member_name, Text.unpack real_name, Text.unpack email_address, show date_registered]
 
                 -- Attempt to add this user
                 --
                 e_result <- lift $ rd' (postUser [UnixTimestamp $ fromIntegral date_registered] $
-                  UserRequest member_name' real_name email_address "smf" (T.pack $ show id_member) Nothing)
+                  UserRequest member_name' real_name' email_address "smf" (Text.pack $ show id_member) Nothing)
 
                 case e_result of
-                  (Left err)                    -> error $ show err
-                  (Right (Left err))            -> error $ show err
-                  (Right (Right user_response)) -> do
+                  Left err                    -> error $ show err
+                  Right (Left err)            -> do
+                    liftIO $ putStrLn $ show err
+                    liftIO $ putStrLn "continuing.."
+                  Right (Right user_response) -> do
                     lift $ createRedisMap "usersName" id_member (userResponseId user_response)
                     break ()
 
