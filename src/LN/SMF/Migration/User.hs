@@ -135,9 +135,7 @@ deleteSmfUsers = do
 
   user_ids <- lnIds "usersName"
 
-  forM_ user_ids
-
-    (\user_id -> do
+  forM_ user_ids $ \user_id -> do
 
       if user_id == 1
         then return ()
@@ -145,6 +143,5 @@ deleteSmfUsers = do
           liftIO $ putStrLn $ show user_id
           void $ rd $ deleteUser' user_id
           deleteRedisMapByLnId "usersName" user_id
-    )
 
   return ()
