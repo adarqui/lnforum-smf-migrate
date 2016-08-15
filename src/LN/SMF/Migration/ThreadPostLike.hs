@@ -32,7 +32,7 @@ createSmfThreadPostLikes = do
   limit <- asks rLimit
 
 
-  thread_post_likes <- liftIO $ query mysql "select id, id_msg, id_member, score from smf_log_gpbp LIMIT ?" (Only limit)
+  thread_post_likes <- liftIO $ query mysql "select id, id_msg, id_member, score from smf_log_gpbp ORDER BY id ASC LIMIT ?" (Only limit)
 
   thread_post_likes_ids <- smfIds "threadPostLikesName"
 

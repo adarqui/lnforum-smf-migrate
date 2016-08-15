@@ -45,7 +45,7 @@ createSmfThreads = do
 
   forM_ [0..(max_limit `div` 50)] $ \off -> do
 
-    threads <- liftIO $ query mysql "select smf_topics.id_topic, smf_topics.is_sticky, smf_topics.id_board, smf_topics.id_member_started, smf_topics.locked, smf_messages.subject, smf_messages.poster_time, smf_messages.poster_ip from smf_topics INNER JOIN smf_messages ON smf_topics.id_first_msg=smf_messages.id_msg where smf_topics.id_board != 79 LIMIT ? OFFSET ?" (50 :: Int, (50 * off) :: Int)
+    threads <- liftIO $ query mysql "select smf_topics.id_topic, smf_topics.is_sticky, smf_topics.id_board, smf_topics.id_member_started, smf_topics.locked, smf_messages.subject, smf_messages.poster_time, smf_messages.poster_ip from smf_topics INNER JOIN smf_messages ON smf_topics.id_first_msg=smf_messages.id_msg where smf_topics.id_board != 79 ORDER BY smf_topics.id_topic ASC LIMIT ? OFFSET ?" (50 :: Int, (50 * off) :: Int)
 
     thread_ids <- smfIds "threadsName"
 

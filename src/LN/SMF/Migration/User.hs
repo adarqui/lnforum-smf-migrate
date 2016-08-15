@@ -44,7 +44,7 @@ createSmfUsers = do
   limit  <- asks rLimit
   org_id <- gets stOrgId
 
-  xs <- liftIO $ query mysql "select id_member, member_name, real_name, email_address, date_registered from smf_members LIMIT ?" (Only limit)
+  xs <- liftIO $ query mysql "select id_member, member_name, real_name, email_address, date_registered from smf_members ORDER BY id_member ASC LIMIT ?" (Only limit)
 
   smf_ids <- smfIds "usersName"
 
@@ -72,20 +72,25 @@ createSmfUsers = do
 
           -- does this user already exist? lookup by email.
           --
-          lr <- rd' (getUserPacks_ByEmail' email_address)
+          lr <- rd' $ getUserPacks_ByEmail' email_address
+          liftIO $ print lr
           case lr of
             Left err -> error $ show err
             Right (Right (UserPackResponses (UserPackResponse{..}:_))) -> do
               -- Since this user already exists, simply create a mapping for future use
               --
-              lr' <- rw userPackResponseUserId $ postTeamMember_ByOrganizationId [UnixTimestamp $ fromIntegral date_registered] org_id (TeamMemberRequest 0)
-              case lr' of
-                Left err -> pure ()
-                Right _  -> do
-                  createRedisMap "usersName" id_member userPackResponseUserId
+              void $ rw userPackResponseUserId $ postTeamMember_ByOrganizationId [UnixTimestamp $ fromIntegral date_registered] org_id (TeamMemberRequest 0)
+              -- case lr' of
+              --   Left err -> pure ()
+              --   Right _  -> do
+              createRedisMap "usersName" id_member userPackResponseUserId
+            -- Fatal error
+            --
+            Right (Left err) -> error $ show err
+
             -- We need to try and add the user, loop through several times in an attempt to add them
             --
-            _ -> do
+            Right (Right (UserPackResponses [])) -> do
 
               resetStCounter
 

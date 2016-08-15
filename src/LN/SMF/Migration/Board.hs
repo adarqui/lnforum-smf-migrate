@@ -31,7 +31,7 @@ createSmfBoards = do
 
   mysql <- asks rMySQL
 
-  categories <- liftIO $ query_ mysql "select id_cat, name from smf_categories"
+  categories <- liftIO $ query_ mysql "select id_cat, name from smf_categories ORDER BY id_cat ASC"
 
   board_ids <- smfIds "boardsName"
 

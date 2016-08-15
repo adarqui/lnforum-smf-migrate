@@ -41,7 +41,7 @@ createSmfThreadPosts = do
 
   forM_ [0..(max_limit `div` 50)] $ \off -> do
 
-    thread_posts <- liftIO $ query mysql "select id_msg, id_topic, poster_time, id_member, subject, body, poster_ip from smf_messages LIMIT ? OFFSET ?" (50 :: Int, (50 * off) :: Int)
+    thread_posts <- liftIO $ query mysql "select id_msg, id_topic, poster_time, id_member, subject, body, poster_ip from smf_messages ORDER BY id_msg ASC LIMIT ? OFFSET ?" (50 :: Int, (50 * off) :: Int)
 
     thread_post_ids <- smfIds "threadPostsName"
 

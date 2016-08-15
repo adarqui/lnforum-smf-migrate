@@ -32,7 +32,7 @@ createSmfPms = do
   mysql <- asks rMySQL
   limit <- asks rLimit
 
-  pms <- liftIO $ query mysql "select smf_personal_messages.id_pm, smf_personal_messages.id_member_from, smf_personal_messages.deleted_by_sender, smf_personal_messages.msgtime, smf_personal_messages.subject, smf_personal_messages.body, smf_pm_recipients.id_member, smf_pm_recipients.bcc, smf_pm_recipients.is_read, smf_pm_recipients.deleted, smf_pm_recipients.is_new from smf_personal_messages INNER JOIN smf_pm_recipients ON smf_personal_messages.id_pm=smf_pm_recipients.id_pm LIMIT ?" (Only limit)
+  pms <- liftIO $ query mysql "select smf_personal_messages.id_pm, smf_personal_messages.id_member_from, smf_personal_messages.deleted_by_sender, smf_personal_messages.msgtime, smf_personal_messages.subject, smf_personal_messages.body, smf_pm_recipients.id_member, smf_pm_recipients.bcc, smf_pm_recipients.is_read, smf_pm_recipients.deleted, smf_pm_recipients.is_new from smf_personal_messages INNER JOIN smf_pm_recipients ON smf_personal_messages.id_pm=smf_pm_recipients.id_pm ORDER BY smf_personal_message.id_pm ASC LIMIT ?" (Only limit)
 
   pm_ids <- smfIds "pmsName"
 
