@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module LN.SMF.Migration.Thread (
   createSmfThreads,
@@ -9,7 +9,7 @@ module LN.SMF.Migration.Thread (
 
 
 
-import           Control.Break                  (loop, break, lift)
+import           Control.Break                  (break, lift, loop)
 import           Control.Monad                  (forM_, when)
 import           Control.Monad.IO.Class         (liftIO)
 import           Control.Monad.Trans.RWS
@@ -19,8 +19,10 @@ import           Data.Monoid                    ((<>))
 import           Data.Text                      (Text)
 import qualified Data.Text                      as T (pack)
 import           Database.MySQL.Simple
-import           Prelude               hiding   (break)
+import           Prelude                        hiding (break)
+
 import           LN.Api
+import           LN.Sanitize.HTML               (sanitizeHtml)
 import           LN.SMF.Migration.Connect.Redis
 import           LN.SMF.Migration.Control
 import           LN.SMF.Migration.Sanitize

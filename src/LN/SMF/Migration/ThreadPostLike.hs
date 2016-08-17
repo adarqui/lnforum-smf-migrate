@@ -15,6 +15,7 @@ import           Control.Monad.Trans.RWS
 import qualified Data.ByteString.Char8          as BSC
 import           Data.Int
 import           Database.MySQL.Simple
+
 import           LN.Api
 import           LN.SMF.Migration.Connect.Redis
 import           LN.SMF.Migration.Control
@@ -44,10 +45,10 @@ createSmfThreadPostLikes = do
 
       forM_
         (filter (\(id_gpbp, _, _, _) -> not $ id_gpbp `elem` thread_post_likes_ids) thread_post_likes)
-        $ \(id_gpbp :: Int64,
-           id_msg :: Int64,
+        $ \(id_gpbp  :: Int64,
+           id_msg    :: Int64,
            id_member :: Int64,
-           score :: Int64
+           score     :: Int64
           ) -> do
 
             liftIO $ print $ (id_msg, id_member, score)

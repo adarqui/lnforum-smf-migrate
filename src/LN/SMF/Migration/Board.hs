@@ -16,7 +16,9 @@ import           Data.Int
 import           Data.Text                      (Text)
 import qualified Data.Text                      as Text
 import           Database.MySQL.Simple
+
 import           LN.Api
+import           LN.Sanitize.HTML               (sanitizeHtml)
 import           LN.SMF.Migration.Connect.Redis
 import           LN.SMF.Migration.Control
 import           LN.SMF.Migration.Sanitize
@@ -62,7 +64,7 @@ createSmfBoards = do
 
           forM_
             (filter (\(id_board, _, _, _, _) -> not $ id_board `elem` board_ids) boards)
-            $ \(id_board   :: Int64,
+            $ \(id_board  :: Int64,
                id_parent  :: Int64,
                id_cat     :: Int64,
                board_name :: Text,

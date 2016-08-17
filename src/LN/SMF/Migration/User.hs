@@ -18,6 +18,7 @@ import           Data.Monoid                    ((<>))
 import           Data.Text                      (Text)
 import qualified Data.Text                      as Text
 import           Database.MySQL.Simple
+import           Prelude                        hiding (break)
 
 import           LN.Api
 import qualified LN.Api.String                  as ApiS
@@ -26,7 +27,6 @@ import           LN.SMF.Migration.Connect.Redis
 import           LN.SMF.Migration.Control
 import           LN.SMF.Migration.Sanitize
 import           LN.T
-import           Prelude                        hiding (break)
 
 
 
@@ -52,10 +52,10 @@ createSmfUsers = do
   --
   forM_
     (filter (\(id_member, _, _, _, _) -> not $ id_member `elem` smf_ids) xs)
-    $ \(id_member :: Int64,
-       member_name :: Text,
-       real_name :: Text,
-       email_address :: Text,
+    $ \(id_member      :: Int64,
+       member_name     :: Text,
+       real_name       :: Text,
+       email_address   :: Text,
        date_registered :: Int
       ) -> do
 

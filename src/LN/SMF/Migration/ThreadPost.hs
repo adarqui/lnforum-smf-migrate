@@ -16,7 +16,9 @@ import qualified Data.ByteString.Char8          as BSC
 import           Data.Int
 import           Data.Text                      (Text)
 import           Database.MySQL.Simple
+
 import           LN.Api
+import           LN.Sanitize.HTML               (sanitizeHtml)
 import           LN.SMF.Migration.Connect.Redis
 import           LN.SMF.Migration.Control
 import           LN.SMF.Migration.Sanitize

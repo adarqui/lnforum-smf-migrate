@@ -11,6 +11,7 @@ module LN.SMF.Migration.Forum (
 
 import           Control.Monad                  (void)
 import           Control.Monad.IO.Class         (liftIO)
+
 import           LN.Api
 import           LN.SMF.Migration.Connect.Redis
 import           LN.SMF.Migration.Control
