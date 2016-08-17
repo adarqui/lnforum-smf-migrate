@@ -129,7 +129,7 @@ createSmfUsers = do
                         lift $ createRedisMap "usersName" id_member (userResponseId user_response)
                         break ()
 
-  return ()
+  pure ()
 
 
 
@@ -142,10 +142,10 @@ deleteSmfUsers = do
   forM_ user_ids $ \user_id -> do
 
       if user_id == 1
-        then return ()
+        then pure ()
         else do
           liftIO $ putStrLn $ show user_id
           void $ rd $ deleteUser' user_id
           deleteRedisMapByLnId "usersName" user_id
 
-  return ()
+  pure ()

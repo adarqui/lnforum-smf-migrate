@@ -37,7 +37,7 @@ createSmfOrganization = do
         Right OrganizationResponse{..} -> do
           createRedisMap "organizationsName" 0 organizationResponseId
           modify (\st->st{ stOrgId = organizationResponseId})
-          return ()
+          pure ()
 
 
 
@@ -47,9 +47,9 @@ deleteSmfOrganization = do
   ln_ids <- lnIds "organizationsName"
 
   case ln_ids of
-    [] -> return ()
+    [] -> pure ()
     (x:_) -> do
 
       void $ rd $ deleteOrganization' x
       deleteRedisMapByLnId "organizationsName" x
-      return ()
+      pure ()

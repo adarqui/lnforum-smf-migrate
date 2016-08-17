@@ -102,7 +102,7 @@ createSmfThreads = do
 
               _ -> break ()
 
-  return ()
+  pure ()
 
 
 
@@ -127,4 +127,4 @@ deleteSmfThreads = do
           Right _  -> do
             deleteRedisMapByLnId "threadsName" thread_id
 
-  return ()
+  pure ()

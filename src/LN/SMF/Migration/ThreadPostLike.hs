@@ -56,8 +56,8 @@ createSmfThreadPostLikes = do
             muser <- findLnIdFromSmfId "usersName" id_member
 
             case (mpost, muser) of
-              (Nothing, _) -> return ()
-              (_, Nothing) -> return ()
+              (Nothing, _) -> pure ()
+              (_, Nothing) -> pure ()
               (Just post, Just user) -> do
 
                 let like_score = if score == 1 then Like else Dislike
@@ -69,9 +69,9 @@ createSmfThreadPostLikes = do
                   Right LikeResponse{..} -> do
                     createRedisMap "threadPostLikesName" id_gpbp likeResponseId
 
-              _ -> return ()
+              _ -> pure ()
 
-  return ()
+  pure ()
 
 
 
@@ -92,4 +92,4 @@ deleteSmfThreadPostLikes = do
           void $ rw likeResponseUserId (deleteLike' thread_post_like_id)
           deleteRedisMapByLnId "threadPostLikesName" thread_post_like_id
 
-  return ()
+  pure ()

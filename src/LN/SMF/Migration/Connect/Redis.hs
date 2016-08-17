@@ -96,7 +96,7 @@ createRedisMap route smf_id ln_id = do
       (buildLnKey [cs org_sid, route, cs $ show ln_id])
       (BSC.pack $ show smf_id)
 
-  return ()
+  pure ()
 
 
 
@@ -111,15 +111,15 @@ deleteRedisMapByLnId route ln_id = do
       (buildLnKey [cs org_sid, route, cs $ show ln_id])
 
   case esmf_id of
-    (Left _) -> return ()
-    (Right Nothing) -> return ()
+    (Left _) -> pure ()
+    (Right Nothing) -> pure ()
     (Right (Just smf_id)) -> do
       void $ liftIO $ runRedis redis $ do
         del [ (buildLnKey [cs org_sid, route, cs $ show ln_id])
             , (buildSmfKey [cs org_sid, route, smf_id])
             ]
 
-  return ()
+  pure ()
 
 
 
@@ -154,8 +154,8 @@ findIds ln_or_smf route = do
     keys (buildKey ln_or_smf [cs org_sid, route, "*"])
 
   case eresult of
-    (Left _) -> return []
-    (Right xs) -> return $ map getId xs
+    (Left _) -> pure []
+    (Right xs) -> pure $ map getId xs
 
   where
   getId key = let (_,b) = BSC.breakEnd (== ':') key in read $ BSC.unpack b
@@ -183,9 +183,9 @@ findIdFrom ln_or_smf route some_id = do
     R.get (buildKey ln_or_smf [cs org_sid, route, cs $ show some_id])
 
   case eresult of
-    (Left _) -> return Nothing
-    (Right Nothing) -> return Nothing
-    (Right (Just v)) -> return $ Just $ read $ BSC.unpack v
+    (Left _) -> pure Nothing
+    (Right Nothing) -> pure Nothing
+    (Right (Just v)) -> pure $ Just $ read $ BSC.unpack v
 
 
 
@@ -195,6 +195,6 @@ getId route some_id = do
   org_sid <- asks rOrgSid
   eresult <- liftIO $ runRedis redis $ R.get (buildKey "none" [cs org_sid, route, cs $ show some_id])
   case eresult of
-    (Left _) -> return Nothing
-    (Right Nothing) -> return Nothing
-    (Right (Just v)) -> return $ Just $ read $ BSC.unpack v
+    (Left _) -> pure Nothing
+    (Right Nothing) -> pure Nothing
+    (Right (Just v)) -> pure $ Just $ read $ BSC.unpack v

@@ -34,7 +34,6 @@ library
                      , break
 --                     , fast-tagsoup
                      , hedis
-                     , html-entities
                      , monad-loops
                      , mtl
                      , mysql-simple

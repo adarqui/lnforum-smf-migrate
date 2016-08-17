@@ -78,7 +78,7 @@ createSmfBoards = do
               mresult <- findLnIdFromSmfId "boardsName" (if id_parent == 0 then id_cat else id_parent)
 
               case mresult of
-                Nothing -> return () -- doesn't exist??
+                Nothing -> pure () -- doesn't exist??
                 (Just parent) -> do
 
                   e_result <- rd (postBoard_ByBoardId [UnixTimestamp $ read "1240177678"] parent $
@@ -89,7 +89,7 @@ createSmfBoards = do
                     Right child_board_response -> do
                       createRedisMap "boardsName" id_board (boardResponseId child_board_response)
 
-  return ()
+  pure ()
 
 
 
@@ -103,4 +103,4 @@ deleteSmfBoards = do
     void $ rd' (deleteBoard' board_id)
     deleteRedisMapByLnId "boardsName" board_id
 
-  return ()
+  pure ()

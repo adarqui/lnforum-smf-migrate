@@ -32,7 +32,6 @@ createSmfThreadPosts = do
   mysql <- asks rMySQL
   limit <- asks rLimit
 
---  [Only thread_posts_count] <- liftIO $ query_ mysql "select count(*) from id_msg, id_topic, poster_time, id_member, subject, body, poster_ip from smf_messages"
   [Only thread_posts_count] <- liftIO $ query_ mysql "select count(*) from smf_messages"
 
   let
@@ -82,9 +81,9 @@ createSmfThreadPosts = do
 
                 _ -> do
                   liftIO $ print $ "thread_posts: not found: mtopic=" ++ show mtopic ++ ", muser=" ++ show muser
-                  return ()
+                  pure ()
 
-  return ()
+  pure ()
 
 
 
@@ -105,4 +104,4 @@ deleteSmfThreadPosts = do
           void $ rw threadPostResponseUserId (deleteThreadPost' thread_post_id)
           deleteRedisMapByLnId "threadPostsName" thread_post_id
 
-  return ()
+  pure ()

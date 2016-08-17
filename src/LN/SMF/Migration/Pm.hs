@@ -63,9 +63,9 @@ createSmfPms = do
 
         case (muser_from, muser_to) of
 
-          (Nothing, _) -> return ()
+          (Nothing, _) -> pure ()
 
-          (_, Nothing) -> return ()
+          (_, Nothing) -> pure ()
 
           ((Just user_from), (Just user_to)) -> do
             -- doesn't exist, created it
@@ -80,9 +80,9 @@ createSmfPms = do
                 createRedisMap ("pmsName" <> "_users") (pmResponseId pm_response) (pmResponseUserId pm_response)
 
 
-          _ -> return ()
+          _ -> pure ()
 
-  return ()
+  pure ()
 
 
 
@@ -97,7 +97,7 @@ deleteSmfPms = do
 
       mpm_user_id <- getId ("pmsName" <> "_users") pm_id
       case mpm_user_id of
-        Nothing -> return ()
+        Nothing -> pure ()
         Just pm_user_id -> do
 
           del_result <- rw pm_user_id (deletePm' pm_id)
@@ -107,4 +107,4 @@ deleteSmfPms = do
               deleteRedisMapByLnId "pmsName" pm_id
               deleteRedisMapByLnId ("pmsName" <> "_users") pm_id
 
-  return ()
+  pure ()

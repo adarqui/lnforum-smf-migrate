@@ -39,9 +39,9 @@ createSmfForum = do
              Left err                -> error $ show err
              Right ForumResponse{..} -> do
                 createRedisMap "forumsName" 0 forumResponseId
-                return ()
+                pure ()
 
-        _  -> return ()
+        _  -> pure ()
 
 
 
@@ -56,4 +56,4 @@ deleteSmfForum = do
        void $ rd (deleteForum' org_id)
        deleteRedisMapByLnId "forumsName" org_id
 
-    _  -> return ()
+    _  -> pure ()

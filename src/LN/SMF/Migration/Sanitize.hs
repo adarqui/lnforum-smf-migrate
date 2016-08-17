@@ -6,9 +6,7 @@ module LN.SMF.Migration.Sanitize (
   fixNick,
   replaceNickChar,
   fixDisplayNick,
-  replaceDisplayNickChar,
-  titleify,
-  sanitizeHtml
+  replaceDisplayNickChar
 ) where
 
 
@@ -17,9 +15,6 @@ import           Data.Char
 import           Data.Maybe
 import           Data.Text              (Text)
 import qualified Data.Text              as Text
-import qualified Data.Text.Lazy         as Lazy
-import qualified Data.Text.Lazy.Builder as Lazy
-import           HTMLEntities.Decoder
 
 
 
@@ -43,19 +38,3 @@ replaceDisplayNickChar c = Just c
 
 fixDisplayNick :: Text -> Text
 fixDisplayNick = Text.pack . catMaybes . map replaceDisplayNickChar . Text.unpack
-
-
-
-titleify :: Text -> Text
-titleify s =
-  case fields of
-    []       -> s
-    [x]      -> x
-    (x:rest) -> Text.concat $ x : map Text.toTitle rest
-  where
-  fields = Text.splitOn " " s
-
-
-
-sanitizeHtml :: Text -> Text
-sanitizeHtml = Text.replace "<br />" "\n" . Lazy.toStrict . Lazy.toLazyText . htmlEncodedText
