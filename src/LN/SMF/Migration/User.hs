@@ -73,7 +73,6 @@ createSmfUsers = do
           -- does this user already exist? lookup by email.
           --
           lr <- rd' $ getUserPacks_ByEmail' email_address
-          liftIO $ print lr
           case lr of
             Left err -> error $ show err
             Right (Right (UserPackResponses (UserPackResponse{..}:_))) -> do

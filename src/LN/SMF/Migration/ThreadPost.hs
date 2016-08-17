@@ -53,14 +53,17 @@ createSmfThreadPosts = do
 
         forM_
           (filter (\(id_msg, _, _, _, _, _, _) -> not $ id_msg `elem` thread_post_ids) thread_posts)
-          $ \(id_msg :: Int64,
-             id_topic :: Int64,
+          $ \(id_msg     :: Int64,
+             id_topic    :: Int64,
              poster_time :: Int64,
-             id_member :: Int64,
-             subject :: Text,
-             body :: Text,
-             poster_ip :: Text
+             id_member   :: Int64,
+             subject     :: Text,
+             body        :: Text,
+             poster_ip   :: Text
             ) -> do
+
+              let
+                body' = sanitizeHtml body
 
               liftIO $ print $ (id_msg, id_topic, poster_time, id_member, subject, poster_ip)
 
@@ -70,7 +73,7 @@ createSmfThreadPosts = do
               case (mtopic, muser) of
                 (Just topic, Just user) -> do
                   e_result <- rw user $ postThreadPost_ByThreadId [UnixTimestamp poster_time] topic $
-                    ThreadPostRequest (Just subject) (PostDataBBCode body) [] [] 0 Nothing Nothing
+                    ThreadPostRequest (Just subject) (PostDataBBCode body') [] [] 0 Nothing Nothing
 
                   case e_result of
                     Left err                   -> error $ show err
