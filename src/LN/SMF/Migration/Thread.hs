@@ -104,7 +104,7 @@ createSmfThreads = do
 
                     -- Set views for this new thead
                     --
-                    lr_view <- lift $ rd' $ postView_ByThreadId' threadResponseId (ViewRequest views)
+                    lr_view <- lift $ rd' $ putView_ByThreadId' threadResponseId (ViewRequest views)
                     case lr_view of
                       Left err         -> error $ show err
                       Right (Left err) -> error $ show err
