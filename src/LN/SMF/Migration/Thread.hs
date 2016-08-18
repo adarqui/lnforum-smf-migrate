@@ -10,7 +10,7 @@ module LN.SMF.Migration.Thread (
 
 
 import           Control.Break                  (break, lift, loop)
-import           Control.Monad                  (forM_, when)
+import           Control.Monad                  (forM_, when, void)
 import           Control.Monad.IO.Class         (liftIO)
 import           Control.Monad.Trans.RWS
 import qualified Data.ByteString.Char8          as BSC
@@ -38,7 +38,6 @@ createSmfThreads = do
   mysql <- asks rMySQL
   limit <- asks rLimit
 
---  [Only threads_count] <- liftIO $ query_ mysql "select count(*) from smf_topics.id_topic, smf_topics.is_sticky, smf_topics.id_board, smf_topics.id_member_started, smf_topics.locked, smf_messages.subject, smf_messages.poster_time, smf_messages.poster_ip from smf_topics INNER JOIN smf_messages ON smf_topics.id_first_msg=smf_messages.id_msg where smf_topics.id_board != 79"
   [Only threads_count] <- liftIO $ query_ mysql "select count(*) from smf_topics"
 
   let
@@ -47,24 +46,25 @@ createSmfThreads = do
 
   forM_ [0..(max_limit `div` 50)] $ \off -> do
 
-    threads <- liftIO $ query mysql "select smf_topics.id_topic, smf_topics.is_sticky, smf_topics.id_board, smf_topics.id_member_started, smf_topics.locked, smf_messages.subject, smf_messages.poster_time, smf_messages.poster_ip from smf_topics INNER JOIN smf_messages ON smf_topics.id_first_msg=smf_messages.id_msg where smf_topics.id_board != 79 ORDER BY smf_topics.id_topic ASC LIMIT ? OFFSET ?" (50 :: Int, (50 * off) :: Int)
+    threads <- liftIO $ query mysql "select smf_topics.id_topic, smf_topics.is_sticky, smf_topics.id_board, smf_topics.id_member_started, smf_topics.locked, smf_topics.num_views, smf_messages.subject, smf_messages.poster_time, smf_messages.poster_ip from smf_topics INNER JOIN smf_messages ON smf_topics.id_first_msg=smf_messages.id_msg where smf_topics.id_board != 79 ORDER BY smf_topics.id_topic ASC LIMIT ? OFFSET ?" (50 :: Int, (50 * off) :: Int)
 
     thread_ids <- smfIds "threadsName"
 
     forM_
-      (filter (\(id_topic, _, _, _, _, _, _, _) -> not $ id_topic `elem` thread_ids) threads)
+      (filter (\(id_topic, _, _, _, _, _, _, _, _) -> not $ id_topic `elem` thread_ids) threads)
       $ \(
-          id_topic :: Int64,
-          is_sticky :: Bool,
-          id_board :: Int64,
+          id_topic          :: Int64,
+          is_sticky         :: Bool,
+          id_board          :: Int64,
           id_member_started :: Int64,
-          locked :: Bool,
-          subject :: Text,
-          poster_time :: Int64,
-          poster_ip :: Text
+          locked            :: Bool,
+          views             :: Int64,
+          subject           :: Text,
+          poster_time       :: Int64,
+          poster_ip         :: Text
         ) -> do
 
-          liftIO $ print (id_topic, is_sticky, id_board, id_member_started, locked, subject, poster_time, poster_ip)
+          liftIO $ print (id_topic, is_sticky, id_board, id_member_started, locked, views, subject, poster_time, poster_ip)
 
           mboard <- findLnIdFromSmfId "boardsName" id_board
           mtopic <- findLnIdFromSmfId "threadsName" id_topic
@@ -96,10 +96,20 @@ createSmfThreads = do
                   ThreadRequest (sanitizeHtml subject') Nothing is_sticky locked Nothing Nothing [] 0 Nothing
 
                 case e_result of
-                  Left err                      -> error $ show err
-                  Right (Left err)              -> liftIO $ putStrLn "continuing.."
-                  Right (Right thread_response) -> do
-                    lift $ createRedisMap "threadsName" id_topic (threadResponseId thread_response)
+                  Left err                         -> error $ show err
+                  Right (Left err)                 -> liftIO $ putStrLn "continuing.."
+                  Right (Right ThreadResponse{..}) -> do
+
+                    lift $ createRedisMap "threadsName" id_topic threadResponseId
+
+                    -- Set views for this new thead
+                    --
+                    lr_view <- lift $ rd' $ postView_ByThreadId' threadResponseId (ViewRequest views)
+                    case lr_view of
+                      Left err         -> error $ show err
+                      Right (Left err) -> error $ show err
+                      Right _          -> pure ()
+
                     break ()
 
               _ -> break ()
