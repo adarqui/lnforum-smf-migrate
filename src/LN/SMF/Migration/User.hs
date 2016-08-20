@@ -83,13 +83,10 @@ createSmfUsers = do
               --   Left err -> pure ()
               --   Right _  -> do
               createRedisMap "usersName" id_member userPackResponseUserId
-            -- Fatal error
-            --
-            Right (Left err) -> error $ show err
 
             -- We need to try and add the user, loop through several times in an attempt to add them
             --
-            Right (Right (UserPackResponses [])) -> do
+            Right _ -> do
 
               resetStCounter
 
