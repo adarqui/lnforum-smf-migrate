@@ -114,7 +114,7 @@ createSmfUsers = do
                 -- Attempt to add this user
                 --
                 e_result <- lift $ rd' (postUser [UnixTimestamp $ fromIntegral date_registered] $
-                  UserRequest member_name' real_name' email_address "smf" (Text.pack $ show id_member) Nothing)
+                  UserRequest member_name' real_name' email_address "smf" Nothing)
 
                 case e_result of
                   Left err                    -> error $ show err
