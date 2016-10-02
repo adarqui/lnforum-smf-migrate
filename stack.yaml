@@ -3,8 +3,9 @@ packages:
 - '.'
 - '../ln-api'
 - '../ln-lib'
+- '../ln-sanitize'
 - '../haskell-ln-types'
 - '../haskell-api-helpers'
 - '../haskell-api-helpers-shared'
-extra-deps: [break-1.0.0]
+extra-deps: [break-1.0.0, html-entities-1.1.2]
 resolver: lts-6.4
