@@ -102,13 +102,14 @@ createSmfThreads = do
 
                     lift $ createRedisMap "threadsName" id_topic threadResponseId
 
+                    -- TODO FIXME: we eventually need views!
                     -- Set views for this new thead
                     --
-                    lr_view <- lift $ rd' $ putView_ByThreadId' threadResponseId (ViewRequest views)
-                    case lr_view of
-                      Left err         -> error $ show err
-                      Right (Left err) -> error $ show err
-                      Right _          -> pure ()
+                    -- lr_view <- lift $ rd' $ putView_ByThreadId' threadResponseId (ViewRequest views)
+                    -- case lr_view of
+                      -- Left err         -> error $ show err
+                      -- Right (Left err) -> error $ show err
+                      -- Right _          -> pure ()
 
                     break ()
 

@@ -1,4 +1,4 @@
-# ln-smf-migration
+# lnforum-smf-migration
 
 **LN PROJECT: WORK IN PROGRESS**
 

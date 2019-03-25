@@ -84,16 +84,15 @@ createRedisMap :: ByteString -> Int64 -> Int64 -> MigrateRWST ()
 createRedisMap route smf_id ln_id = do
 
   redis   <- asks rRedis
-  org_sid <- asks rOrgSid
 
   void $ liftIO $ runRedis redis $
     set
-      (buildSmfKey [cs org_sid, route, cs $ show smf_id])
+      (buildSmfKey [route, cs $ show smf_id])
       (BSC.pack $ show ln_id)
 
   void $ liftIO $ runRedis redis $
     set
-      (buildLnKey [cs org_sid, route, cs $ show ln_id])
+      (buildLnKey [route, cs $ show ln_id])
       (BSC.pack $ show smf_id)
 
   pure ()
@@ -104,19 +103,18 @@ deleteRedisMapByLnId :: ByteString -> Int64 -> MigrateRWST ()
 deleteRedisMapByLnId route ln_id = do
 
   redis   <- asks rRedis
-  org_sid <- asks rOrgSid
 
   esmf_id <- liftIO $ runRedis redis $
     R.get
-      (buildLnKey [cs org_sid, route, cs $ show ln_id])
+      (buildLnKey [route, cs $ show ln_id])
 
   case esmf_id of
     (Left _) -> pure ()
     (Right Nothing) -> pure ()
     (Right (Just smf_id)) -> do
       void $ liftIO $ runRedis redis $ do
-        del [ (buildLnKey [cs org_sid, route, cs $ show ln_id])
-            , (buildSmfKey [cs org_sid, route, smf_id])
+        del [ (buildLnKey [route, cs $ show ln_id])
+            , (buildSmfKey [route, smf_id])
             ]
 
   pure ()
@@ -148,10 +146,9 @@ findIds :: ByteString -> ByteString -> MigrateRWST [Int64]
 findIds ln_or_smf route = do
 
   redis   <- asks rRedis
-  org_sid <- asks rOrgSid
 
   eresult <- liftIO $ runRedis redis $
-    keys (buildKey ln_or_smf [cs org_sid, route, "*"])
+    keys (buildKey ln_or_smf [route, "*"])
 
   case eresult of
     (Left _) -> pure []
@@ -177,10 +174,9 @@ findIdFrom :: ByteString -> ByteString -> Int64 -> MigrateRWST (Maybe Int64)
 findIdFrom ln_or_smf route some_id = do
 
   redis   <- asks rRedis
-  org_sid <- asks rOrgSid
 
   eresult <- liftIO $ runRedis redis $
-    R.get (buildKey ln_or_smf [cs org_sid, route, cs $ show some_id])
+    R.get (buildKey ln_or_smf [route, cs $ show some_id])
 
   case eresult of
     (Left _) -> pure Nothing
@@ -192,8 +188,7 @@ findIdFrom ln_or_smf route some_id = do
 getId :: ByteString -> Int64 -> MigrateRWST (Maybe Int64)
 getId route some_id = do
   redis   <- asks rRedis
-  org_sid <- asks rOrgSid
-  eresult <- liftIO $ runRedis redis $ R.get (buildKey "none" [cs org_sid, route, cs $ show some_id])
+  eresult <- liftIO $ runRedis redis $ R.get (buildKey "none" [route, cs $ show some_id])
   case eresult of
     (Left _) -> pure Nothing
     (Right Nothing) -> pure Nothing

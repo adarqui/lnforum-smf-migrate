@@ -49,7 +49,19 @@ createSmfBoards = do
 
           liftIO $ print $ (id_cat, name)
 
-          e_result <- rd (postBoard_ByForumId [UnixTimestamp $ read "1240177678"] forum_id $ BoardRequest name Nothing False True True [] Nothing [] 0 Nothing Nothing)
+          e_result <- rd (postBoard_ByForumId [UnixTimestamp $ read "1240177678"] forum_id $ BoardRequest {
+            boardRequestDisplayName = name,
+            boardRequestDescription = Nothing,
+            boardRequestBoardType = FixMe,
+            boardRequestActive = True,
+            boardRequestIsAnonymous = False,
+            boardRequestCanCreateBoards = False,
+            boardRequestCanCreateThreads = True,
+            boardRequestVisibility = Public,
+            boardRequestIcon = Nothing,
+            boardRequestTags = [],
+            boardRequestGuard = 0
+          })
           case e_result of
             Left err                -> error $ show err
             Right BoardResponse{..} -> do
@@ -84,7 +96,19 @@ createSmfBoards = do
                 (Just parent) -> do
 
                   e_result <- rd (postBoard_ByBoardId [UnixTimestamp $ read "1240177678"] parent $
-                    BoardRequest (sanitizeHtml board_name) desc False True True [] Nothing [] 0 Nothing Nothing)
+                    BoardRequest {
+                      boardRequestDisplayName = sanitizeHtml board_name,
+                      boardRequestDescription = desc,
+                      boardRequestBoardType = FixMe,
+                      boardRequestActive = True,
+                      boardRequestIsAnonymous = False,
+                      boardRequestCanCreateBoards = False,
+                      boardRequestCanCreateThreads = True,
+                      boardRequestVisibility = Public,
+                      boardRequestIcon = Nothing,
+                      boardRequestTags = [],
+                      boardRequestGuard = 0
+                    })
 
                   case e_result of
                     Left err -> error $ show err

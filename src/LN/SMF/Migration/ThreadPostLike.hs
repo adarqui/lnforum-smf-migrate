@@ -63,7 +63,7 @@ createSmfThreadPostLikes = do
 
                 let like_score = if score == 1 then Like else Dislike
 
-                e_result <- rw user (postLike_ByThreadPostId' post $ LikeRequest like_score Nothing 0)
+                e_result <- rw user (postLikes_ByThreadPostId' post $ LikeRequest like_score Nothing 0)
 
                 case e_result of
                   Left err               -> error $ show err

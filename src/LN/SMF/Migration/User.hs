@@ -42,7 +42,6 @@ createSmfUsers = do
 
   mysql  <- asks rMySQL
   limit  <- asks rLimit
-  org_id <- gets stOrgId
 
   xs <- liftIO $ query mysql "select id_member, member_name, real_name, email_address, date_registered from smf_members ORDER BY id_member ASC LIMIT ?" (Only limit)
 
@@ -78,7 +77,7 @@ createSmfUsers = do
             Right (Right (UserPackResponses (UserPackResponse{..}:_))) -> do
               -- Since this user already exists, simply create a mapping for future use
               --
-              void $ rw userPackResponseUserId $ postTeamMember_ByOrganizationId [UnixTimestamp $ fromIntegral date_registered] org_id (TeamMemberRequest 0)
+              -- void $ rw userPackResponseUserId $ postTeamMember_ByOrganizationId [UnixTimestamp $ fromIntegral date_registered] org_id (TeamMemberRequest 0)
               -- case lr' of
               --   Left err -> pure ()
               --   Right _  -> do
@@ -119,12 +118,12 @@ createSmfUsers = do
                     liftIO $ putStrLn $ show err
                     liftIO $ putStrLn "continuing.."
                   Right (Right user_response) -> do
-                    lr <- lift $ rw (userResponseId user_response) $ postTeamMember_ByOrganizationId' org_id $ TeamMemberRequest 0
-                    case lr of
-                      Left err -> error $ show err
-                      Right _  -> do
-                        lift $ createRedisMap "usersName" id_member (userResponseId user_response)
-                        break ()
+                    -- lr <- lift $ rw (userResponseId user_response) $ postTeamMember_ByOrganizationId' org_id $ TeamMemberRequest 0
+                    -- case lr of
+                    --  Left err -> error $ show err
+                    --  Right _  -> do
+                    lift $ createRedisMap "usersName" id_member (userResponseId user_response)
+                    break ()
 
   pure ()
 

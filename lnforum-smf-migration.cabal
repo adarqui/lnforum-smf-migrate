@@ -21,9 +21,6 @@ library
                        LN.SMF.Migration.Connect.MySQL
                        LN.SMF.Migration.Connect.Redis
                        LN.SMF.Migration.Control
-                       LN.SMF.Migration.Forum
-                       LN.SMF.Migration.Organization
-                       LN.SMF.Migration.Pm
                        LN.SMF.Migration.Sanitize
                        LN.SMF.Migration.Thread
                        LN.SMF.Migration.ThreadPost
@@ -49,9 +46,9 @@ library
                      , wreq
 --                     , text-regex-replace
                      , lnforum-api
-                     , ln-lib
+                     , lnforum-lib
                      , lnforum-sanitize
-                     , haskell-lnforum-types
+                     , lnforum-types-gen
                      , haskell-api-helpers
                      , haskell-api-helpers-shared
   default-language:    Haskell2010

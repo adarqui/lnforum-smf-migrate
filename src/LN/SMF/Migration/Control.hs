@@ -40,7 +40,6 @@ import           LN.T.Error                 (ApplicationError)
 
 
 data MigrateState = MigrateState {
-  stOrgId   :: Int64,
   stCounter :: Int64
 }
 
@@ -66,7 +65,6 @@ resetStCounter = do
 
 data MigrateReader = MigrateReader {
   rSuperKey  :: ByteString,
-  rOrgSid    :: Text,
   rRedisHost :: Text,
   rRedis     :: R.Connection,
   rMySQLHost :: Text,
