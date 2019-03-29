@@ -37,83 +37,80 @@ createSmfBoards = do
 
   board_ids <- smfIds "boardsName"
 
-  forum_ids <- lnIds "forumsName"
+  liftIO $ putStrLn $ show categories
+  liftIO $ putStrLn $ show board_ids
 
-  case forum_ids of
-    []           -> error "Forum does not exist."
-    (forum_id:_) -> do
+  forM_
+    (filter (\(id_cat, _) -> not $ id_cat `elem` board_ids) categories)
+    $ \(id_cat :: Int64, name :: Text) -> do
+
+      liftIO $ print $ (id_cat, name)
+
+      e_result <- rd (postBoard_ByForumId [UnixTimestamp $ read "1240177678"] defaultForumId $ BoardRequest {
+        boardRequestDisplayName = name,
+        boardRequestDescription = Nothing,
+        boardRequestBoardType = FixMe,
+        boardRequestActive = True,
+        boardRequestIsAnonymous = False,
+        boardRequestCanCreateBoards = False,
+        boardRequestCanCreateThreads = True,
+        boardRequestVisibility = Public,
+        boardRequestIcon = Nothing,
+        boardRequestTags = [],
+        boardRequestGuard = 0
+      })
+      case e_result of
+        Left err                -> error $ show err
+        Right BoardResponse{..} -> do
+          createRedisMap "boardsName" id_cat boardResponseId
+
+
+  forM_
+    categories
+    $ \(cat_id :: Int64, _) -> do
+
+      boards <- liftIO $ query mysql "select id_board, id_parent, id_cat, name, description from smf_boards where id_cat = ?" (Only cat_id)
 
       forM_
-        (filter (\(id_cat, _) -> not $ id_cat `elem` board_ids) categories)
-        $ \(id_cat :: Int64, name :: Text) -> do
+        (filter (\(id_board, _, _, _, _) -> not $ id_board `elem` board_ids) boards)
+        $ \(id_board  :: Int64,
+           id_parent  :: Int64,
+           id_cat     :: Int64,
+           board_name :: Text,
+           board_desc :: Text
+          ) -> do
 
-          liftIO $ print $ (id_cat, name)
+          let desc = if board_desc == ""
+                        then Nothing
+                        else Just $ sanitizeHtml $ Text.take 132 board_desc
 
-          e_result <- rd (postBoard_ByForumId [UnixTimestamp $ read "1240177678"] forum_id $ BoardRequest {
-            boardRequestDisplayName = name,
-            boardRequestDescription = Nothing,
-            boardRequestBoardType = FixMe,
-            boardRequestActive = True,
-            boardRequestIsAnonymous = False,
-            boardRequestCanCreateBoards = False,
-            boardRequestCanCreateThreads = True,
-            boardRequestVisibility = Public,
-            boardRequestIcon = Nothing,
-            boardRequestTags = [],
-            boardRequestGuard = 0
-          })
-          case e_result of
-            Left err                -> error $ show err
-            Right BoardResponse{..} -> do
-              createRedisMap "boardsName" id_cat boardResponseId
+          liftIO $ print (id_board, id_parent, id_parent, board_name, board_desc)
 
+          mresult <- findLnIdFromSmfId "boardsName" (if id_parent == 0 then id_cat else id_parent)
 
-      forM_
-        categories
-        $ \(cat_id :: Int64, _) -> do
+          case mresult of
+            Nothing -> pure () -- doesn't exist??
+            (Just parent) -> do
 
-          boards <- liftIO $ query mysql "select id_board, id_parent, id_cat, name, description from smf_boards where id_cat = ?" (Only cat_id)
+              e_result <- rd (postBoard_ByBoardId [UnixTimestamp $ read "1240177678"] parent $
+                BoardRequest {
+                  boardRequestDisplayName = sanitizeHtml board_name,
+                  boardRequestDescription = desc,
+                  boardRequestBoardType = FixMe,
+                  boardRequestActive = True,
+                  boardRequestIsAnonymous = False,
+                  boardRequestCanCreateBoards = False,
+                  boardRequestCanCreateThreads = True,
+                  boardRequestVisibility = Public,
+                  boardRequestIcon = Nothing,
+                  boardRequestTags = [],
+                  boardRequestGuard = 0
+                })
 
-          forM_
-            (filter (\(id_board, _, _, _, _) -> not $ id_board `elem` board_ids) boards)
-            $ \(id_board  :: Int64,
-               id_parent  :: Int64,
-               id_cat     :: Int64,
-               board_name :: Text,
-               board_desc :: Text
-              ) -> do
-
-              let desc = if board_desc == ""
-                            then Nothing
-                            else Just $ sanitizeHtml $ Text.take 132 board_desc
-
-              liftIO $ print (id_board, id_parent, id_parent, board_name, board_desc)
-
-              mresult <- findLnIdFromSmfId "boardsName" (if id_parent == 0 then id_cat else id_parent)
-
-              case mresult of
-                Nothing -> pure () -- doesn't exist??
-                (Just parent) -> do
-
-                  e_result <- rd (postBoard_ByBoardId [UnixTimestamp $ read "1240177678"] parent $
-                    BoardRequest {
-                      boardRequestDisplayName = sanitizeHtml board_name,
-                      boardRequestDescription = desc,
-                      boardRequestBoardType = FixMe,
-                      boardRequestActive = True,
-                      boardRequestIsAnonymous = False,
-                      boardRequestCanCreateBoards = False,
-                      boardRequestCanCreateThreads = True,
-                      boardRequestVisibility = Public,
-                      boardRequestIcon = Nothing,
-                      boardRequestTags = [],
-                      boardRequestGuard = 0
-                    })
-
-                  case e_result of
-                    Left err -> error $ show err
-                    Right child_board_response -> do
-                      createRedisMap "boardsName" id_board (boardResponseId child_board_response)
+              case e_result of
+                Left err -> error $ show err
+                Right child_board_response -> do
+                  createRedisMap "boardsName" id_board (boardResponseId child_board_response)
 
   pure ()
 

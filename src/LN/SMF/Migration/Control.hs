@@ -15,7 +15,8 @@ module LN.SMF.Migration.Control (
   rd',
   rw',
   ApiOptions (..),
-  apiOpts
+  apiOpts,
+  defaultForumId
 ) where
 
 
@@ -139,3 +140,8 @@ apiOpts = ApiOptions {
   apiOptions   = defaultSpecificApiOptions,
   apiDebug     = True
 }
+
+
+
+defaultForumId :: Int64
+defaultForumId = 1

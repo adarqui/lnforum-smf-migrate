@@ -18,7 +18,7 @@ connectMySQL mysql_host = do
   where
   info = defaultConnectInfo {
     connectHost     = T.unpack mysql_host,
-    connectUser     = "root",
-    connectPassword = "root",
-    connectDatabase = "adarq_forum"
+    connectUser     = "smf",
+    connectPassword = "smf",
+    connectDatabase = "smf"
   }
