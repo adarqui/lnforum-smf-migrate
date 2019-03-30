@@ -10,7 +10,7 @@ module LN.SMF.Migration.Thread (
 
 
 import           Control.Break                  (break, lift, loop)
-import           Control.Monad                  (forM_, when, void)
+import           Control.Monad                  (forM_, when)
 import           Control.Monad.IO.Class         (liftIO)
 import           Control.Monad.Trans.RWS
 import qualified Data.ByteString.Char8          as BSC
@@ -36,7 +36,7 @@ createSmfThreads = do
   liftIO $ putStrLn "migrating threads.."
 
   mysql <- asks rMySQL
-  limit <- asks rLimit
+  limit <- asks rThreadsLimit
 
   [Only threads_count] <- liftIO $ query_ mysql "select count(*) from smf_topics"
 
@@ -97,7 +97,7 @@ createSmfThreads = do
 
                 case e_result of
                   Left err                         -> error $ show err
-                  Right (Left err)                 -> liftIO $ putStrLn "continuing.."
+                  Right (Left err)                 -> liftIO $ putStrLn $ "continuing.. however, err = " <> show err
                   Right (Right ThreadResponse{..}) -> do
 
                     lift $ createRedisMap "threadsName" id_topic threadResponseId

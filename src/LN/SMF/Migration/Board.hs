@@ -92,7 +92,7 @@ createSmfBoards = do
             Nothing -> pure () -- doesn't exist??
             (Just parent) -> do
 
-              e_result <- rd (postBoard_ByBoardId [UnixTimestamp $ read "1240177678"] parent $
+              e_result <- rd (postBoard [UnixTimestamp $ read "1240177678"] $
                 BoardRequest {
                   boardRequestDisplayName = sanitizeHtml board_name,
                   boardRequestDescription = desc,

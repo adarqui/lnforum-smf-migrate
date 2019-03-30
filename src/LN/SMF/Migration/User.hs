@@ -41,7 +41,7 @@ createSmfUsers = do
   liftIO $ putStrLn "migrating users.."
 
   mysql  <- asks rMySQL
-  limit  <- asks rLimit
+  limit  <- asks rUsersLimit
 
   xs <- liftIO $ query mysql "select id_member, member_name, real_name, email_address, date_registered from smf_members ORDER BY id_member ASC LIMIT ?" (Only limit)
 

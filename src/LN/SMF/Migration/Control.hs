@@ -65,14 +65,18 @@ resetStCounter = do
 
 
 data MigrateReader = MigrateReader {
-  rSuperKey  :: ByteString,
-  rRedisHost :: Text,
-  rRedis     :: R.Connection,
-  rMySQLHost :: Text,
-  rMySQL     :: My.Connection,
-  rApiHost   :: Text,
-  rApiOpts   :: ApiOptions SpecificApiOptions,
-  rLimit     :: Int
+  rSuperKey         :: ByteString,
+  rRedisHost        :: Text,
+  rRedis            :: R.Connection,
+  rMySQLHost        :: Text,
+  rMySQL            :: My.Connection,
+  rApiHost          :: Text,
+  rApiOpts          :: ApiOptions SpecificApiOptions,
+  rUsersLimit       :: Int,
+  rBoardsLimit      :: Int,
+  rThreadsLimit     :: Int,
+  rThreadPostsLimit :: Int,
+  rThreadPostLikesLimit :: Int
 }
 
 

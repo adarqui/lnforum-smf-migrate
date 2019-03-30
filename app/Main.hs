@@ -10,14 +10,15 @@ import           System.Environment
 
 
 
+-- TODO FIXME: need to pass flags, optparse etc
 usage :: IO ()
-usage = putStrLn "ln-smf-migrate <super_key> <redis_host> <mysql_host> <api_host> [migrate <limit>|unmigrate]"
+usage = putStrLn "ln-smf-migrate [migrate|unmigrate]"
 
 
 main :: IO ()
 main = do
   argv <- (map T.pack) <$> getArgs
   case argv of
-    [super_key, redis_host, mysql_host, api_host, "migrate", n] -> migrateSMF super_key redis_host mysql_host api_host (read $ T.unpack n)
-    [super_key, redis_host, mysql_host, api_host, "unmigrate"]  -> unMigrateSMF super_key redis_host mysql_host api_host
-    _              -> usage
+    ["migrate"]   -> migrateSMF defaultMigrateConfig
+    ["unmigrate"] -> unMigrateSMF defaultUnmigrateConfig
+    _             -> usage

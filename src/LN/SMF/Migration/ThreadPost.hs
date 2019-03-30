@@ -32,7 +32,7 @@ createSmfThreadPosts = do
   liftIO $ putStrLn "migrating thread posts.."
 
   mysql <- asks rMySQL
-  limit <- asks rLimit
+  limit <- asks rThreadPostsLimit
 
   [Only thread_posts_count] <- liftIO $ query_ mysql "select count(*) from smf_messages"
 
@@ -46,44 +46,38 @@ createSmfThreadPosts = do
 
     thread_post_ids <- smfIds "threadPostsName"
 
-    forum_ids <- lnIds "forumsName"
+    forM_
+      (filter (\(id_msg, _, _, _, _, _, _) -> not $ id_msg `elem` thread_post_ids) thread_posts)
+      $ \(id_msg     :: Int64,
+         id_topic    :: Int64,
+         poster_time :: Int64,
+         id_member   :: Int64,
+         subject     :: Text,
+         body        :: Text,
+         poster_ip   :: Text
+        ) -> do
 
-    case forum_ids of
-      [] -> liftIO $ putStrLn "Forum does not exist."
-      (_:_) -> do
+          let
+            body' = sanitizeHtml body
 
-        forM_
-          (filter (\(id_msg, _, _, _, _, _, _) -> not $ id_msg `elem` thread_post_ids) thread_posts)
-          $ \(id_msg     :: Int64,
-             id_topic    :: Int64,
-             poster_time :: Int64,
-             id_member   :: Int64,
-             subject     :: Text,
-             body        :: Text,
-             poster_ip   :: Text
-            ) -> do
+          liftIO $ print $ (id_msg, id_topic, poster_time, id_member, subject, poster_ip)
 
-              let
-                body' = sanitizeHtml body
+          mtopic <- findLnIdFromSmfId "threadsName" id_topic
+          muser  <- findLnIdFromSmfId "usersName" id_member
 
-              liftIO $ print $ (id_msg, id_topic, poster_time, id_member, subject, poster_ip)
+          case (mtopic, muser) of
+            (Just topic, Just user) -> do
+              e_result <- rw user $ postThreadPost_ByThreadId [UnixTimestamp poster_time] topic $
+                ThreadPostRequest (Just subject) (PostDataBBCode body') [] [] 0 Nothing Nothing
 
-              mtopic <- findLnIdFromSmfId "threadsName" id_topic
-              muser  <- findLnIdFromSmfId "usersName" id_member
+              case e_result of
+                Left err                   -> error $ show err
+                Right thread_post_response -> do
+                  createRedisMap "threadPostsName" id_msg (threadPostResponseId thread_post_response)
 
-              case (mtopic, muser) of
-                (Just topic, Just user) -> do
-                  e_result <- rw user $ postThreadPost_ByThreadId [UnixTimestamp poster_time] topic $
-                    ThreadPostRequest (Just subject) (PostDataBBCode body') [] [] 0 Nothing Nothing
-
-                  case e_result of
-                    Left err                   -> error $ show err
-                    Right thread_post_response -> do
-                      createRedisMap "threadPostsName" id_msg (threadPostResponseId thread_post_response)
-
-                _ -> do
-                  liftIO $ print $ "thread_posts: not found: mtopic=" ++ show mtopic ++ ", muser=" ++ show muser
-                  pure ()
+            _ -> do
+              liftIO $ print $ "thread_posts: not found: mtopic=" ++ show mtopic ++ ", muser=" ++ show muser
+              pure ()
 
   pure ()
 

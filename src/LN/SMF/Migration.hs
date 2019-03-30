@@ -2,6 +2,9 @@
 
 module LN.SMF.Migration (
   module A,
+  MigrateConfig(..),
+  defaultMigrateConfig,
+  defaultUnmigrateConfig,
   migrateSMF,
   unMigrateSMF,
   migrateRWST
@@ -26,12 +29,42 @@ import           LN.SMF.Migration.User           as A
 
 
 
+data MigrateConfig = MigrateConfig {
+  mSuperKey         :: Text,
+  mRedisHost        :: Text,
+  mMysqlHost        :: Text,
+  mApiHost          :: Text,
+  mUsersLimit       :: Int,
+  mBoardsLimit      :: Int,
+  mThreadsLimit     :: Int,
+  mThreadPostsLimit :: Int,
+  mThreadPostLikesLimit :: Int
+}
+
+defaultMigrateConfig :: MigrateConfig
+defaultMigrateConfig = MigrateConfig {
+  mSuperKey = "x",
+  mRedisHost = "127.0.0.1",
+  mMysqlHost = "127.0.0.1",
+  mApiHost = "http://local.adarq.org:1682",
+  mUsersLimit = 0,
+  mBoardsLimit = 1000000,
+  mThreadsLimit = 1000000,
+  mThreadPostsLimit = 1000000,
+  mThreadPostLikesLimit = 1000000
+}
+
+defaultUnmigrateConfig :: MigrateConfig
+defaultUnmigrateConfig = defaultMigrateConfig
+
+
+
 -- | Migrate an smf forum to leuro
 --
 -- We should be able to run this multiple times without problem.
 --
-migrateSMF :: Text -> Text -> Text -> Text ->  Int -> IO ()
-migrateSMF super_key redis_host mysql_host api_host limit = migrateRWST super_key redis_host mysql_host api_host limit go
+migrateSMF :: MigrateConfig -> IO ()
+migrateSMF migrate_config = migrateRWST migrate_config go
   where
   go = do
     createSmfUsers
@@ -50,8 +83,8 @@ migrateSMF super_key redis_host mysql_host api_host limit = migrateRWST super_ke
 --
 -- We should be able to run this multiple times without problem.
 --
-unMigrateSMF :: Text -> Text -> Text -> Text -> IO ()
-unMigrateSMF super_key redis_host mysql_host api_host = migrateRWST super_key redis_host mysql_host api_host 0 go
+unMigrateSMF :: MigrateConfig -> IO ()
+unMigrateSMF migrate_config = migrateRWST migrate_config go
   where
   go = do
     -- deleteUserProfiles
@@ -64,10 +97,24 @@ unMigrateSMF super_key redis_host mysql_host api_host = migrateRWST super_key re
 
 
 
-migrateRWST :: forall w a. Text -> Text -> Text -> Text -> Int -> RWST MigrateReader w MigrateState IO a -> IO ()
-migrateRWST super_key redis_host mysql_host api_host limit go = do
-  mysql <- connectMySQL mysql_host
-  redis <- connectRedis redis_host
-  let api_opts = apiOpts { apiUrl = api_host, apiKey = Just $ cs super_key }
-  void $ evalRWST go (MigrateReader (cs super_key) redis_host redis mysql_host mysql api_host api_opts limit) (MigrateState 0)
+migrateRWST :: forall w a. MigrateConfig -> RWST MigrateReader w MigrateState IO a -> IO ()
+migrateRWST MigrateConfig{..} go = do
+  mysql <- connectMySQL mMysqlHost
+  redis <- connectRedis mRedisHost
+  let api_opts = apiOpts { apiUrl = mApiHost, apiKey = Just $ cs mSuperKey }
+  let migrate_reader = MigrateReader {
+    rSuperKey = cs mSuperKey,
+    rRedisHost = mRedisHost,
+    rRedis = redis,
+    rMySQLHost = mMysqlHost,
+    rMySQL = mysql,
+    rApiHost = mApiHost,
+    rApiOpts = api_opts,
+    rUsersLimit = mUsersLimit,
+    rBoardsLimit = mBoardsLimit,
+    rThreadsLimit = mThreadsLimit,
+    rThreadPostsLimit = mThreadPostsLimit,
+    rThreadPostLikesLimit = mThreadPostLikesLimit
+  }
+  void $ evalRWST go migrate_reader (MigrateState 0)
   return ()
