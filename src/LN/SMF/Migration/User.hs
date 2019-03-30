@@ -94,7 +94,7 @@ createSmfUsers = do
                 lift $ incStCounter
                 unique_id <- lift $ gets stCounter
 
-                when (unique_id == 10) (break ())
+                when (unique_id == 3) (break ())
 
                 -- Hacky stuff
                 -- Just getting all cases to pass:
@@ -109,7 +109,7 @@ createSmfUsers = do
 
                 -- Attempt to add this user
                 --
-                e_result <- lift $ rd' (postUser [UnixTimestamp $ fromIntegral date_registered] $
+                e_result <- lift $ rd' (postUsers [UnixTimestamp $ fromIntegral date_registered] $
                   UserRequest member_name' real_name' email_address "smf" Nothing)
 
                 case e_result of
