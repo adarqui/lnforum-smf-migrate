@@ -102,15 +102,22 @@ createSmfUsers = do
                 -- $ick3nin.v3nd3tta
                 --
                 let
-                  member_name' = Text.filter (\c -> all (/= c) ("#$" :: String)) $ sanitizeLine $ if unique_id == 1 then member_name else (member_name <> (Text.pack $ show unique_id))
+                  member_name' = Text.filter (\c -> all (/= c) (".#$@" :: String)) $ sanitizeLine $ if unique_id == 1 then member_name else (member_name <> (Text.pack $ show unique_id))
+                  real_name' = Text.filter (\c -> all (/= c) (".#$@" :: String)) $ sanitizeLine $ if unique_id == 1 then real_name else (real_name <> (Text.pack $ show unique_id))
                   safe_name'   = toSafeName member_name'
 
-                liftIO $ putStrLn $ show [show id_member, Text.unpack member_name, Text.unpack real_name, Text.unpack email_address, show date_registered]
+                liftIO $ putStrLn $ show [show id_member, Text.unpack member_name', Text.unpack real_name, Text.unpack email_address, show date_registered]
 
                 -- Attempt to add this user
                 --
                 e_result <- lift $ rd' (postUsers [UnixTimestamp $ fromIntegral date_registered] $
-                  UserRequest member_name' real_name' email_address "smf" Nothing)
+                  UserRequest {
+                    userRequestDisplayName = member_name',
+                    userRequestFullName = real_name',
+                    userRequestEmail = email_address,
+                    userRequestPlugin = "smf",
+                    userRequestAcceptTOS = Nothing
+                  })
 
                 case e_result of
                   Left err                    -> error $ show err
