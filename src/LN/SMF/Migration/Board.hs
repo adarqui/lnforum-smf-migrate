@@ -18,7 +18,9 @@ import qualified Data.Text                      as Text
 import           Database.MySQL.Simple
 
 import           LN.Api
+import qualified LN.Api.String as ApiS
 import           LN.Sanitize.HTML               (sanitizeHtml)
+import LN.Sanitize.Internal
 import           LN.SMF.Migration.Connect.Redis
 import           LN.SMF.Migration.Control
 import           LN.SMF.Migration.Sanitize
@@ -46,23 +48,31 @@ createSmfBoards = do
 
       liftIO $ print $ (id_cat, name)
 
-      e_result <- rd (postBoard_ByForumId [UnixTimestamp $ read "1240177678"] defaultForumId $ BoardRequest {
-        boardRequestDisplayName = name,
-        boardRequestDescription = Nothing,
-        boardRequestBoardType = FixMe,
-        boardRequestActive = True,
-        boardRequestIsAnonymous = False,
-        boardRequestCanCreateBoards = False,
-        boardRequestCanCreateThreads = True,
-        boardRequestVisibility = Public,
-        boardRequestIcon = Nothing,
-        boardRequestTags = [],
-        boardRequestGuard = 0
-      })
-      case e_result of
-        Left err                -> error $ show err
-        Right BoardResponse{..} -> do
+      lr <- rd' $ ApiS.getBoardPack' $ toSafeUrl name
+      case lr of
+        Left err -> error $ show err
+        Right (Right BoardPackResponse{..}) -> do
+          let BoardResponse{..} = boardPackResponseBoard
           createRedisMap "boardsName" id_cat boardResponseId
+
+        Right _ -> do
+          e_result <- rd (postBoard_ByForumId [UnixTimestamp $ read "1240177678"] defaultForumId $ BoardRequest {
+            boardRequestDisplayName = name,
+            boardRequestDescription = Nothing,
+            boardRequestBoardType = FixMe,
+            boardRequestActive = True,
+            boardRequestIsAnonymous = False,
+            boardRequestCanCreateBoards = False,
+            boardRequestCanCreateThreads = True,
+            boardRequestVisibility = Public,
+            boardRequestIcon = Nothing,
+            boardRequestTags = [],
+            boardRequestGuard = 0
+          })
+          case e_result of
+            Left err                -> error $ show err
+            Right BoardResponse{..} -> do
+              createRedisMap "boardsName" id_cat boardResponseId
 
 
   forM_
@@ -84,14 +94,18 @@ createSmfBoards = do
                         then Nothing
                         else Just $ sanitizeHtml $ Text.take 132 board_desc
 
-          liftIO $ print (id_board, id_parent, id_parent, board_name, board_desc)
+          liftIO $ print (id_board, board_name, board_desc)
 
-          mresult <- findLnIdFromSmfId "boardsName" (if id_parent == 0 then id_cat else id_parent)
+          mresult <- findLnIdFromSmfId "boardsName" id_board
 
-          case mresult of
-            Nothing -> pure () -- doesn't exist??
-            (Just parent) -> do
+          lr <- rd' $ ApiS.getBoardPack' $ toSafeUrl board_name
+          case lr of
+            Left err -> error $ show err
+            Right (Right BoardPackResponse{..}) -> do
+              let BoardResponse{..} = boardPackResponseBoard
+              createRedisMap "boardsName" id_board boardResponseId
 
+            Right _ -> do
               e_result <- rd (postBoard [UnixTimestamp $ read "1240177678"] $
                 BoardRequest {
                   boardRequestDisplayName = sanitizeHtml board_name,

@@ -1,5 +1,6 @@
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes        #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 module LN.SMF.Migration (
   module A,
@@ -15,7 +16,6 @@ module LN.SMF.Migration (
 
 import           Control.Monad                   (void)
 import           Control.Monad.Trans.RWS
-import           Data.ByteString                 (ByteString)
 import           Data.String.Conversions         (cs)
 import           Data.Text                       (Text)
 
@@ -31,14 +31,14 @@ import           LN.SMF.Migration.User           as A
 
 
 data MigrateConfig = MigrateConfig {
-  mSuperKey         :: Text,
-  mRedisHost        :: Text,
-  mMysqlHost        :: Text,
-  mApiHost          :: Text,
-  mUsersLimit       :: Int,
-  mBoardsLimit      :: Int,
-  mThreadsLimit     :: Int,
-  mThreadPostsLimit :: Int,
+  mSuperKey             :: Text,
+  mRedisHost            :: Text,
+  mMysqlHost            :: Text,
+  mApiHost              :: Text,
+  mUsersLimit           :: Int,
+  mBoardsLimit          :: Int,
+  mThreadsLimit         :: Int,
+  mThreadPostsLimit     :: Int,
   mThreadPostLikesLimit :: Int
 }
 
