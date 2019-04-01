@@ -34,6 +34,9 @@ data MigrateConfig = MigrateConfig {
   mSuperKey             :: Text,
   mRedisHost            :: Text,
   mMysqlHost            :: Text,
+  mMysqlUsername        :: Text,
+  mMysqlPassword        :: Text,
+  mMysqlDatabase        :: Text,
   mApiHost              :: Text,
   mUsersLimit           :: Int,
   mBoardsLimit          :: Int,
@@ -47,6 +50,9 @@ defaultMigrateConfig = MigrateConfig {
   mSuperKey = "x",
   mRedisHost = "127.0.0.1",
   mMysqlHost = "127.0.0.1",
+  mMysqlUsername = "smf",
+  mMysqlPassword = "smf",
+  mMysqlDatabase = "smf",
   mApiHost = "http://local.adarq.org:1682",
   mUsersLimit = 1000000,
   mBoardsLimit = 1000000,
@@ -100,7 +106,7 @@ unMigrateSMF migrate_config = migrateRWST migrate_config go
 
 migrateRWST :: forall w a. MigrateConfig -> RWST MigrateReader w MigrateState IO a -> IO ()
 migrateRWST MigrateConfig{..} go = do
-  mysql <- connectMySQL mMysqlHost
+  mysql <- connectMySQL mMysqlHost mMysqlUsername mMysqlPassword mMysqlDatabase
   redis <- connectRedis mRedisHost
   let api_opts = apiOpts { apiUrl = mApiHost, apiKey = Just $ cs mSuperKey }
   let migrate_reader = MigrateReader {

@@ -12,13 +12,13 @@ import           Database.MySQL.Simple
 
 
 
-connectMySQL :: Text -> IO Connection
-connectMySQL mysql_host = do
+connectMySQL :: Text -> Text -> Text -> Text -> IO Connection
+connectMySQL mysql_host mysql_username mysql_password mysql_database = do
   connect info
   where
   info = defaultConnectInfo {
     connectHost     = T.unpack mysql_host,
-    connectUser     = "smf",
-    connectPassword = "smf",
-    connectDatabase = "smf"
+    connectUser     = T.unpack mysql_username,
+    connectPassword = T.unpack mysql_password,
+    connectDatabase = T.unpack mysql_database
   }
